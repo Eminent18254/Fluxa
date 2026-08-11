@@ -1,0 +1,27 @@
+{
+  "name": "@fluxa/contracts",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Fluxa smart contracts — invoicing and settlement on Flare Coston2",
+  "license": "MIT",
+  "scripts": {
+    "compile": "hardhat compile",
+    "test": "hardhat test",
+    "coverage": "hardhat coverage",
+    "clean": "hardhat clean",
+    "check:flare": "hardhat run scripts/checkFlare.ts --network coston2",
+    "deploy:coston2": "hardhat run scripts/deploy.ts --network coston2"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^6.1.2",
+    "hardhat": "^2.29.0",
+    "typescript": "^5.7.2",
+    "ts-node": "^10.9.2",
+    "@types/node": "^22.10.2",
+    "dotenv": "^16.4.7"
+  },
+  "dependencies": {
+    "@flarenetwork/flare-periphery-contracts": "^0.1.52",
+    "@openzeppelin/contracts": "^5.1.0"
+  }
+}
