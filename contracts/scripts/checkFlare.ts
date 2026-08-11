@@ -31,6 +31,7 @@ const ERC20_ABI = [
 ];
 const FTSO_ABI = [
   "function getFeedById(bytes21) view returns (uint256, int8, uint64)",
+  "function getFeedsById(bytes21[]) view returns (uint256[], int8[], uint64)",
 ];
 
 let failures = 0;
@@ -115,6 +116,34 @@ async function main() {
     } catch (err) {
       check(false, name, `read failed: ${(err as Error).message.slice(0, 80)}`);
     }
+  }
+
+  // The frontend reads all feeds in one call via getFeedsById. If that
+  // variant is not on the deployed contract, the price panel fails silently —
+  // so assert it here rather than discovering it in the browser.
+  console.log("\nFTSOv2 batch read (used by the frontend)");
+  try {
+    const ids = (Object.keys(FEED_IDS) as FeedName[]).map((n) => FEED_IDS[n]);
+    const [values, decimalsList, timestamp] = await ftso.getFeedsById(ids);
+    check(
+      values.length === ids.length && decimalsList.length === ids.length,
+      "getFeedsById returns one entry per feed",
+      `${values.length} values, ${decimalsList.length} decimals, ts ${timestamp}`,
+    );
+    // Batch and single reads must agree, or the two code paths disagree on price.
+    const singleXrp = prices["XRP/USD"];
+    const batchXrp = Number(values[0]) / 10 ** Number(decimalsList[0]);
+    check(
+      singleXrp !== undefined && Math.abs(batchXrp - singleXrp) < 0.01,
+      "batch agrees with single read",
+      `batch $${batchXrp.toFixed(6)}`,
+    );
+  } catch (err) {
+    check(
+      false,
+      "getFeedsById",
+      `not callable: ${(err as Error).message.slice(0, 80)}`,
+    );
   }
 
   console.log("\nFluxa conversion math");

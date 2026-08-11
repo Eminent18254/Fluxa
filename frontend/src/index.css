@@ -1,0 +1,45 @@
+@import 'tailwindcss';
+
+/*
+ * Tailwind v4 configures itself in CSS — there is no tailwind.config.js.
+ * Design tokens are declared as @theme variables and become utilities
+ * automatically (e.g. --color-ink-900 gives bg-ink-900, text-ink-900).
+ */
+@theme {
+  --color-ink-950: #08090c;
+  --color-ink-900: #0d0f14;
+  --color-ink-800: #14171f;
+  --color-ink-700: #1c2029;
+  --color-ink-600: #2a2f3b;
+  --color-ink-400: #6b7280;
+  --color-ink-200: #b6bcc8;
+  --color-ink-50: #f5f6f8;
+
+  --color-flare-500: #e62058;
+  --color-flare-400: #ff3d72;
+  --color-flare-300: #ff6b93;
+
+  --color-signal-500: #12b981;
+  --color-signal-400: #34d399;
+
+  --color-warn-500: #f59e0b;
+  --color-danger-500: #ef4444;
+
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', 'Cascadia Code', Menlo, monospace;
+}
+
+@layer base {
+  html {
+    color-scheme: dark;
+  }
+
+  body {
+    @apply bg-ink-950 text-ink-50 font-sans antialiased;
+  }
+
+  /* Addresses, hashes and amounts must never be ambiguous. */
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}
