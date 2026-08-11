@@ -1,0 +1,38 @@
+# ---- secrets: never commit ----
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets.json
+
+# ---- node ----
+node_modules/
+npm-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# ---- hardhat / solidity ----
+contracts/artifacts/
+contracts/cache/
+contracts/typechain-types/
+contracts/coverage/
+contracts/coverage.json
+contracts/.deployments/*.local.json
+
+# ---- frontend ----
+frontend/dist/
+frontend/.vite/
+frontend/coverage/
+
+# ---- editors / os ----
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# ---- misc ----
+*.log
+.cache/
