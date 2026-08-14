@@ -38,6 +38,7 @@ import { formatAmount, formatAge, formatPrice, formatUsd } from '@/lib/format'
 import { paths } from '@/routes'
 import { getPublicInvoicePage } from '@/lib/db'
 import { hasSupabaseConfig, supabase } from '@/lib/supabase'
+import { confirmSettledInvoice } from '@/lib/confirmSettlement'
 
 /** Both tokens and native XRP quote at 6 decimals in this app. */
 const PAY_DECIMALS = 6
@@ -339,6 +340,7 @@ function PayFlow({ invoice }: { invoice: PayPageInvoice }) {
       )}
 
       <PayButton
+        recordId={invoice.id}
         amountLabel={amountLabel}
         invoiceId={invoice.onchainInvoiceId}
         merchantAddress={invoice.merchantAddress}
@@ -364,6 +366,7 @@ function PayFlow({ invoice }: { invoice: PayPageInvoice }) {
  * shown as the clearly-labelled next step rather than faked.
  */
 function PayButton({
+  recordId,
   amountLabel,
   invoiceId,
   merchantAddress,
@@ -373,6 +376,7 @@ function PayButton({
   settlementToken,
   reserveSufficient,
 }: {
+  recordId: string
   amountLabel: string | null
   invoiceId?: string | null
   merchantAddress?: string | null
@@ -423,6 +427,11 @@ function PayButton({
       const settlementReceipt = await publicClient.waitForTransactionReceipt({ hash: settlementHash })
       if (settlementReceipt.status !== 'success') throw new Error('Invoice settlement failed on-chain.')
       setPhase('done')
+      try {
+        await confirmSettledInvoice(recordId, settlementHash)
+      } catch (syncError) {
+        setError(`Settlement completed on-chain. Dashboard sync is pending: ${syncError instanceof Error ? syncError.message : 'refresh shortly.'}`)
+      }
     } catch (cause) {
       setPhase('paid')
       setError(`Payment is confirmed and cannot be charged again. Settlement is still pending: ${cause instanceof Error ? cause.message : 'retry the settlement transaction.'}`)
