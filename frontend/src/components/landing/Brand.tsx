@@ -12,12 +12,7 @@ export function LogoMark({ className = 'size-9' }: { className?: string }) {
     <span
       className={`relative inline-grid place-items-center text-brand-700 drop-shadow-[0_8px_12px_rgba(36,82,224,.22)] ${className}`}
     >
-      <svg viewBox="0 0 40 40" fill="none" className="relative size-full" aria-hidden="true">
-        <defs><linearGradient id="fluxa-mark" x1="5" y1="5" x2="35" y2="35"><stop stopColor="#70a2ff"/><stop offset=".48" stopColor="#2452e0"/><stop offset="1" stopColor="#5a45e6"/></linearGradient></defs>
-        <path d="M6.5 12.5c4.3-5 9.1-5 13.4 0s9.1 5 13.6 0" stroke="url(#fluxa-mark)" strokeWidth="5" strokeLinecap="round" />
-        <path d="M6.5 27.5c4.3 5 9.1 5 13.4 0s9.1-5 13.6 0" stroke="url(#fluxa-mark)" strokeWidth="5" strokeLinecap="round" />
-        <circle cx="20" cy="20" r="3.25" fill="#8b7cf4" stroke="white" strokeWidth="1.5" />
-      </svg>
+      <img src="/fluxa-mark.svg" alt="" className="relative size-full" aria-hidden="true" />
     </span>
   )
 }
