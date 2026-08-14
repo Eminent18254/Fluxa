@@ -1,0 +1,34 @@
+{
+  "network": "coston2",
+  "chainId": 114,
+  "deployer": "0x8586C9978C176a61816754038dE7B7C4Edda39b5",
+  "deployedAtBlock": 34048219,
+  "contracts": {
+    "FluxaInvoiceV2": "0xa7a76084C0AD139504Ef1184f2d0A6054c019aA0",
+    "FluxaSettlementV2": "0x7F4b2E77f0BbCA9856c620F5606a9618809eE34a",
+    "FluxaPriceOracle": "0xc7705bE0dac98590F28c738Ffc8b2C1e5282620c"
+  },
+  "tokens": [
+    {
+      "symbol": "FXRP",
+      "address": "0x0b6A3645c240605887a5532109323A3E12273dc7",
+      "decimals": 6,
+      "feedId": "0x015852502f55534400000000000000000000000000",
+      "feedName": "XRP/USD",
+      "mock": false
+    },
+    {
+      "symbol": "USDT0",
+      "address": "0xC1A5B41512496B80903D1f32d6dEa3a73212E71F",
+      "decimals": 6,
+      "feedId": "0x01555344542f555344000000000000000000000000",
+      "feedName": "USDT/USD",
+      "mock": false
+    }
+  ],
+  "baseDeployment": "coston2.json",
+  "reserve": {
+    "funded": false,
+    "note": "Cross-asset checkout remains unavailable until the settlement token reserve is funded."
+  }
+}

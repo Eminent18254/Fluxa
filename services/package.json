@@ -1,0 +1,28 @@
+{
+  "name": "@fluxa/services",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Fluxa backend services — blockchain event to Supabase synchronisation",
+  "license": "MIT",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "sync": "tsx src/bin/sync.ts",
+    "sync:once": "tsx src/bin/sync.ts --once",
+    "sync:status": "tsx src/bin/status.ts",
+    "verify:mapping": "tsx src/bin/verifyMapping.ts"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.58.0",
+    "dotenv": "^17.2.3",
+    "ethers": "^6.15.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.2.0",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4"
+  }
+}

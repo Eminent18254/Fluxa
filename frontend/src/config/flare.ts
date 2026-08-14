@@ -29,6 +29,14 @@ export const COSTON2_PROTOCOL = {
   Relay: '0xa10B672D1c62e5457b17af63d4302add6A99d7dE',
 } as const;
 
+/** Fluxa application contracts. A deployment file or Vite env supplies these. */
+export const FLUXA_CONTRACTS = {
+  invoice: (import.meta.env.VITE_INVOICE_REGISTRY_ADDRESS ?? '').trim() as `0x${string}` | '',
+  settlement: (import.meta.env.VITE_SETTLEMENT_VAULT_ADDRESS ?? '').trim() as `0x${string}` | '',
+  invoiceV2: (import.meta.env.VITE_INVOICE_REGISTRY_V2_ADDRESS ?? '').trim() as `0x${string}` | '',
+  settlementV2: (import.meta.env.VITE_SETTLEMENT_VAULT_V2_ADDRESS ?? '').trim() as `0x${string}` | '',
+} as const;
+
 /**
  * Tokens Fluxa accepts.
  *

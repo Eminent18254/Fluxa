@@ -90,3 +90,91 @@ export const ftsoV2Abi = [
     ],
   },
 ] as const;
+
+export const fluxaInvoiceAbi = [
+  { type: 'error', name: 'InvoiceNotFound', inputs: [{ name: 'invoiceId', type: 'uint256' }] },
+  { type: 'error', name: 'InvalidStatus', inputs: [{ name: 'invoiceId', type: 'uint256' }, { name: 'actual', type: 'uint8' }] },
+  { type: 'error', name: 'AlreadyPaid', inputs: [{ name: 'invoiceId', type: 'uint256' }, { name: 'payer', type: 'address' }] },
+  { type: 'error', name: 'IncorrectPaymentAmount', inputs: [{ name: 'expected', type: 'uint256' }, { name: 'received', type: 'uint256' }] },
+  { type: 'error', name: 'MerchantIsPayer', inputs: [] },
+  {
+    type: 'function', name: 'createInvoice', stateMutability: 'nonpayable',
+    inputs: [
+      { name: 'payToken', type: 'address' }, { name: 'amount', type: 'uint256' },
+      { name: 'dueAt', type: 'uint64' }, { name: 'paymentRef', type: 'bytes32' },
+    ], outputs: [{ name: 'invoiceId', type: 'uint256' }],
+  },
+  {
+    type: 'function', name: 'payInvoice', stateMutability: 'nonpayable',
+    inputs: [{ name: 'invoiceId', type: 'uint256' }], outputs: [],
+  },
+  {
+    type: 'function', name: 'getInvoice', stateMutability: 'view',
+    inputs: [{ name: 'invoiceId', type: 'uint256' }],
+    outputs: [{ name: 'invoice', type: 'tuple', components: [
+      { name: 'merchant', type: 'address' }, { name: 'payToken', type: 'address' },
+      { name: 'amount', type: 'uint256' }, { name: 'amountPaid', type: 'uint256' },
+      { name: 'createdAt', type: 'uint64' }, { name: 'dueAt', type: 'uint64' },
+      { name: 'paidAt', type: 'uint64' }, { name: 'payer', type: 'address' },
+      { name: 'status', type: 'uint8' }, { name: 'rail', type: 'uint8' },
+      { name: 'paymentRef', type: 'bytes32' },
+    ] }],
+  },
+] as const;
+
+export const fluxaSettlementAbi = [
+  {
+    type: 'function', name: 'settleInvoice', stateMutability: 'nonpayable',
+    inputs: [{ name: 'invoiceId', type: 'uint256' }],
+    outputs: [{ name: 'token', type: 'address' }, { name: 'amountOut', type: 'uint256' }],
+  },
+] as const;
+
+export const fluxaInvoiceV2Abi = [
+  { type: 'error', name: 'InvalidInvoice', inputs: [{ name: 'invoiceId', type: 'uint256' }] },
+  { type: 'error', name: 'InvalidConfiguration', inputs: [] },
+  { type: 'error', name: 'UnsupportedPaymentToken', inputs: [{ name: 'token', type: 'address' }] },
+  { type: 'error', name: 'InvalidStatus', inputs: [{ name: 'invoiceId', type: 'uint256' }, { name: 'status', type: 'uint8' }] },
+  { type: 'error', name: 'MerchantIsPayer', inputs: [] },
+  { type: 'error', name: 'SettlementNotConfigured', inputs: [] },
+  { type: 'error', name: 'QuoteExceeded', inputs: [{ name: 'quoted', type: 'uint256' }, { name: 'maximum', type: 'uint256' }] },
+  { type: 'error', name: 'IncorrectPaymentAmount', inputs: [{ name: 'expected', type: 'uint256' }, { name: 'received', type: 'uint256' }] },
+  {
+    type: 'function', name: 'createInvoice', stateMutability: 'nonpayable',
+    inputs: [
+      { name: 'payTokens', type: 'address[]' }, { name: 'settlementToken', type: 'address' },
+      { name: 'usdAmount', type: 'uint256' }, { name: 'dueAt', type: 'uint64' },
+      { name: 'paymentRef', type: 'bytes32' },
+    ], outputs: [{ name: 'invoiceId', type: 'uint256' }],
+  },
+  {
+    type: 'function', name: 'quotePaymentAmount', stateMutability: 'view',
+    inputs: [{ name: 'invoiceId', type: 'uint256' }, { name: 'token', type: 'address' }],
+    outputs: [{ name: 'amount', type: 'uint256' }],
+  },
+  {
+    type: 'function', name: 'payInvoice', stateMutability: 'nonpayable',
+    inputs: [
+      { name: 'invoiceId', type: 'uint256' }, { name: 'token', type: 'address' },
+      { name: 'maxAmount', type: 'uint256' },
+    ], outputs: [],
+  },
+] as const;
+
+export const fluxaSettlementV2Abi = [
+  { type: 'error', name: 'InsufficientReserve', inputs: [{ name: 'token', type: 'address' }, { name: 'required', type: 'uint256' }, { name: 'available', type: 'uint256' }] },
+  { type: 'error', name: 'AlreadySettled', inputs: [] },
+  { type: 'error', name: 'SettlementNotReserved', inputs: [{ name: 'invoiceId', type: 'uint256' }] },
+  {
+    type: 'function', name: 'capacityFor', stateMutability: 'view',
+    inputs: [{ name: 'invoiceId', type: 'uint256' }, { name: 'payToken', type: 'address' }],
+    outputs: [
+      { name: 'required', type: 'uint256' }, { name: 'available', type: 'uint256' },
+      { name: 'sufficient', type: 'bool' },
+    ],
+  },
+  {
+    type: 'function', name: 'settleInvoice', stateMutability: 'nonpayable',
+    inputs: [{ name: 'invoiceId', type: 'uint256' }], outputs: [{ name: 'amountOut', type: 'uint256' }],
+  },
+] as const;

@@ -7,10 +7,21 @@
   "scripts": {
     "compile": "hardhat compile",
     "test": "hardhat test",
+    "test:offline": "hardhat test test/FluxaInvoice.test.ts test/FluxaSettlement.test.ts test/FluxaPriceOracle.test.ts test/FluxaQuote.test.ts test/FluxaFdcPaymentRail.test.ts test/FluxaV2.test.ts",
+    "test:fork": "hardhat test test/FluxaPriceOracle.coston2.test.ts",
+    "typecheck": "hardhat compile && tsc --noEmit",
     "coverage": "hardhat coverage",
     "clean": "hardhat clean",
+    "node": "hardhat node",
     "check:flare": "hardhat run scripts/checkFlare.ts --network coston2",
-    "deploy:coston2": "hardhat run scripts/deploy.ts --network coston2"
+    "deploy:local": "hardhat run scripts/deploy.ts --network localhost",
+    "deploy:v2:local": "hardhat run scripts/deployV2.ts --network localhost",
+    "smoke:local": "hardhat run scripts/smokeLocal.ts --network localhost",
+    "smoke:railb": "hardhat run scripts/smokeRailB.ts --network localhost",
+    "deploy:coston2": "hardhat run scripts/deploy.ts --network coston2",
+    "deploy:v2:coston2": "hardhat run scripts/deployV2.ts --network coston2",
+    "check:v2:coston2": "hardhat run scripts/checkV2Reserve.ts --network coston2",
+    "fund:v2:coston2": "hardhat run scripts/fundV2Reserve.ts --network coston2"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^6.1.2",

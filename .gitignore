@@ -18,7 +18,11 @@ contracts/cache/
 contracts/typechain-types/
 contracts/coverage/
 contracts/coverage.json
-contracts/.deployments/*.local.json
+# Local chain records are throwaway: the chain resets and the addresses are
+# only meaningful while that node is alive. Coston2 records are committed as
+# deployment evidence.
+contracts/deployments/hardhat.json
+contracts/deployments/localhost.json
 
 # ---- frontend ----
 frontend/dist/
@@ -35,4 +39,7 @@ Thumbs.db
 
 # ---- misc ----
 *.log
+services/fluxa-indexer*.log
 .cache/
+.spec-extract.txt
+.claude/

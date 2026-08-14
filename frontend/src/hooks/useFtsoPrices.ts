@@ -14,6 +14,7 @@ import { COSTON2_PROTOCOL, FEED_IDS, type FeedName } from '@/config/flare';
 import { ftsoV2Abi } from '@/lib/abi';
 
 export interface FeedPrice {
+  raw: bigint;
   /** Price as a plain number, already scaled by the feed's own decimals. */
   price: number;
   /** The exponent FTSO returned for this feed — 6 for XRP/USD, 8 for FLR/USD. */
@@ -51,6 +52,7 @@ export function useFtsoPrices() {
       const dp = Number(decimals[i]);
       if (raw === undefined || Number.isNaN(dp)) return;
       prices[name] = {
+        raw: raw as bigint,
         price: Number(raw) / 10 ** dp,
         decimals: dp,
         ageSeconds,
@@ -86,5 +88,8 @@ export function usdToTokenUnits(
   const priceUnits = BigInt(Math.round(price.price * 10 ** price.decimals));
   const numerator =
     usdCents * 10n ** BigInt(tokenDecimals) * 10n ** BigInt(price.decimals);
-  return numerator / (priceUnits * 100n);
+  const denominator = priceUnits * 100n;
+  // FluxaQuote rounds up: an invoice must never become worth less than its USD
+  // face value because integer division discarded a fractional base unit.
+  return (numerator + denominator - 1n) / denominator;
 }
