@@ -9,6 +9,7 @@ declare module 'lucide-react' {
   export const ChevronLeft: ComponentType<SVGProps<SVGSVGElement>>
   export const Clock3: ComponentType<SVGProps<SVGSVGElement>>
   export const Coins: ComponentType<SVGProps<SVGSVGElement>>
+  export const Copy: ComponentType<SVGProps<SVGSVGElement>>
   export const CircleDollarSign: ComponentType<SVGProps<SVGSVGElement>>
   export const Link2: ComponentType<SVGProps<SVGSVGElement>>
   export const ExternalLink: ComponentType<SVGProps<SVGSVGElement>>
@@ -21,6 +22,7 @@ declare module 'lucide-react' {
   export const RadioTower: ComponentType<SVGProps<SVGSVGElement>>
   export const RefreshCw: ComponentType<SVGProps<SVGSVGElement>>
   export const ShieldCheck: ComponentType<SVGProps<SVGSVGElement>>
+  export const Share2: ComponentType<SVGProps<SVGSVGElement>>
   export const Sparkles: ComponentType<SVGProps<SVGSVGElement>>
   export const WalletCards: ComponentType<SVGProps<SVGSVGElement>>
   export const X: ComponentType<SVGProps<SVGSVGElement>>

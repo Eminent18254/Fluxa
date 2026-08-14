@@ -14,6 +14,7 @@
  */
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { Link, useParams } from 'react-router'
+import { Check, Copy, Share2 } from 'lucide-react'
 import type { FeedName, TokenSymbol } from '@/config/flare'
 import type { PublicInvoiceView } from '@/lib/db'
 import { useFtsoPrices, usdToTokenUnits } from '@/hooks/useFtsoPrices'
@@ -120,8 +121,12 @@ export function PayInvoicePage() {
 }
 
 function PayCard({ invoice }: { invoice: PayPageInvoice }) {
+  const { address } = useWallet()
   const payable = invoice.status === 'OPEN' || invoice.status === 'PENDING'
   const done = invoice.status === 'PAID' || invoice.status === 'SETTLED'
+  const isMerchant = Boolean(
+    address && invoice.merchantAddress && address.toLowerCase() === invoice.merchantAddress.toLowerCase(),
+  )
 
   return (
     <div className="rounded-[2.2rem] bg-gradient-to-br from-brand-600 via-[#76a9fb] to-iris-500 p-1.5 shadow-[0_30px_90px_rgba(36,82,224,.22)] sm:p-2">
@@ -154,7 +159,7 @@ function PayCard({ invoice }: { invoice: PayPageInvoice }) {
         </div>
 
         {payable ? (
-          <PayFlow invoice={invoice} />
+          isMerchant ? <MerchantSharePanel invoice={invoice} /> : <PayFlow invoice={invoice} />
         ) : done ? (
           <PaidReceipt invoice={invoice} />
         ) : (
@@ -163,6 +168,61 @@ function PayCard({ invoice }: { invoice: PayPageInvoice }) {
       </div>
     </div>
     </div>
+  )
+}
+
+function MerchantSharePanel({ invoice }: { invoice: PayPageInvoice }) {
+  const [copied, setCopied] = useState(false)
+  const paymentUrl = typeof window !== 'undefined' ? window.location.href : ''
+
+  async function copyLink() {
+    await navigator.clipboard.writeText(paymentUrl)
+    setCopied(true)
+    window.setTimeout(() => setCopied(false), 2_000)
+  }
+
+  async function shareLink() {
+    if (navigator.share) {
+      await navigator.share({
+        title: invoice.title,
+        text: `Payment request for ${formatUsd(invoice.usdAmountNumber)}`,
+        url: paymentUrl,
+      })
+      return
+    }
+    await copyLink()
+  }
+
+  return (
+    <section className="mt-5 overflow-hidden rounded-3xl border-2 border-brand-200 bg-brand-50/60 p-4 shadow-[0_18px_50px_rgba(36,82,224,.10)] sm:mt-6 sm:p-5">
+      <div className="flex items-start gap-3">
+        <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-brand-600 text-white shadow-[0_8px_22px_rgba(36,82,224,.22)]">
+          <Share2 className="size-5" />
+        </span>
+        <div>
+          <h2 className="font-display text-lg font-bold text-night">Share this payment link</h2>
+          <p className="mt-1 text-sm leading-relaxed text-night/55">Send this secure link to your customer. They will see the accepted assets and live payment quote.</p>
+        </div>
+      </div>
+
+      <div className="mt-4 flex min-w-0 items-center gap-2 rounded-2xl border border-brand-200 bg-white p-2 pl-3 shadow-sm">
+        <span className="min-w-0 flex-1 truncate text-sm font-semibold text-night/75">{paymentUrl}</span>
+        <button type="button" onClick={() => void copyLink()} className="grid size-10 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-700 transition-colors hover:bg-brand-100" aria-label="Copy payment link">
+          {copied ? <Check className="size-4.5" /> : <Copy className="size-4.5" />}
+        </button>
+      </div>
+
+      <div className="mt-3 grid gap-2 sm:grid-cols-2">
+        <Button variant="primary" size="lg" onClick={() => void copyLink()}>
+          {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
+          {copied ? 'Link copied' : 'Copy payment link'}
+        </Button>
+        <Button variant="secondary" size="lg" onClick={() => void shareLink()}>
+          <Share2 className="size-4" /> Share
+        </Button>
+      </div>
+      <p className="mt-3 text-center text-xs font-medium text-brand-800/60">Open invoice · ready to share</p>
+    </section>
   )
 }
 
