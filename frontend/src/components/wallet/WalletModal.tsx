@@ -16,7 +16,7 @@ type Step = 'no-wallet' | 'connect' | 'wrong-network' | 'connected'
 
 function friendlyWalletError(message: string) {
   if (/4001|user rejected|rejected the request|request rejected/i.test(message)) {
-    return 'Connection was cancelled in your wallet.'
+    return 'Connection cancelled. Try again when you are ready.'
   }
   if (/already processing|resource unavailable|request.*pending|pending request/i.test(message)) {
     return 'Your wallet already has a pending request. Open it and finish or cancel that prompt.'
@@ -157,8 +157,8 @@ export function WalletModal({ open, onClose }: { open: boolean; onClose: () => v
                   <Icons.wallet className="size-6" />
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="block font-semibold">Browser wallet</span>
-                  <span className="block text-sm text-night/55">MetaMask & injected wallets</span>
+                  <span className="block font-semibold">MetaMask</span>
+                  <span className="block text-sm text-night/55">Connect securely</span>
                 </span>
                 {isConnecting ? (
                   <Spinner className="size-5 text-brand-600" />
@@ -167,8 +167,7 @@ export function WalletModal({ open, onClose }: { open: boolean; onClose: () => v
                 )}
               </button>
               <p className="mt-4 text-center text-xs text-night/50">
-                You'll be asked to approve the connection in your wallet. Fluxa never moves
-                funds without a transaction you sign.
+                Approve the connection request in your wallet.
               </p>
             </div>
           )}
@@ -255,7 +254,7 @@ export function WalletModal({ open, onClose }: { open: boolean; onClose: () => v
 
               <div className="mt-5 flex flex-col gap-3 sm:flex-row">
                 <Button variant="primary" size="lg" onClick={authenticated ? enterApp : authenticate} disabled={authenticating || checkingAuth} className="flex-1">
-                  {checkingAuth ? <><Spinner className="size-4" /> Preparing…</> : authenticating ? <><Spinner className="size-4" /> Verify in wallet…</> : authenticated ? <>Open app</> : <>Verify wallet</>}
+                  {checkingAuth ? <><Spinner className="size-4" /> Loading…</> : authenticating ? <><Spinner className="size-4" /> Verify in wallet…</> : authenticated ? <>Open app</> : <>Verify wallet</>}
                   <Icons.arrowRight className="size-4" />
                 </Button>
                 <Button variant="secondary" size="lg" onClick={() => disconnect()} className="w-full sm:w-auto">

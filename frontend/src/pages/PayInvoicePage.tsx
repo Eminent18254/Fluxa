@@ -14,7 +14,7 @@
  */
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router'
-import { Check, Copy, Share2 } from 'lucide-react'
+import { Check, ChevronLeft, Copy, Share2 } from 'lucide-react'
 import type { FeedName, TokenSymbol } from '@/config/flare'
 import type { PublicInvoiceView } from '@/lib/db'
 import { useFtsoPrices, usdToTokenUnits } from '@/hooks/useFtsoPrices'
@@ -89,12 +89,24 @@ export function PayInvoicePage() {
     <div className="app-shell flex min-h-dvh flex-col text-night">
       <header className="sticky top-0 z-30 px-3 pt-3 sm:px-5 sm:pt-4">
         <div className="liquid-nav mx-auto flex max-w-2xl items-center justify-between gap-4 rounded-full px-4 py-2.5 sm:px-5">
-          <Link
-            to={paths.landing}
-            className="rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300"
-          >
-            <Wordmark tone="dark" markClassName="size-8" textClassName="text-lg" />
-          </Link>
+          <div className="flex min-w-0 items-center gap-2">
+            {merchantView && (
+              <Link
+                to={paths.invoices}
+                className="app-icon-button size-9 shrink-0"
+                aria-label="Back to invoices"
+                title="Back to invoices"
+              >
+                <ChevronLeft className="size-4.5" />
+              </Link>
+            )}
+            <Link
+              to={paths.landing}
+              className="rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300"
+            >
+              <Wordmark tone="dark" markClassName="size-8" textClassName="text-lg" />
+            </Link>
+          </div>
           <WalletButton surface="light" />
         </div>
       </header>
