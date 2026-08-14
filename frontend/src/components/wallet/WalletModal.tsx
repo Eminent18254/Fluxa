@@ -14,6 +14,19 @@ import { X } from 'lucide-react'
 
 type Step = 'no-wallet' | 'connect' | 'wrong-network' | 'connected'
 
+function friendlyWalletError(message: string) {
+  if (/4001|user rejected|rejected the request|request rejected/i.test(message)) {
+    return 'Connection was cancelled in your wallet.'
+  }
+  if (/already processing|resource unavailable|request.*pending|pending request/i.test(message)) {
+    return 'Your wallet already has a pending request. Open it and finish or cancel that prompt.'
+  }
+  if (/no provider|provider not found|connector not found|injected/i.test(message)) {
+    return 'Open Fluxa inside your wallet app browser to connect on mobile.'
+  }
+  return message.length > 180 ? `${message.slice(0, 177)}...` : message
+}
+
 /**
  * The wallet flow, as a single modal that always reflects the true state of the
  * connection rather than a wizard the user clicks through. The step is derived,
@@ -50,6 +63,10 @@ export function WalletModal({ open, onClose }: { open: boolean; onClose: () => v
         : 'connected'
 
   const errorLine = error ? error.message.split('\n')[0] : null
+  const isMobile = typeof navigator !== 'undefined' && /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+  const mobileWalletUrl = typeof window !== 'undefined'
+    ? `https://link.metamask.io/dapp/${window.location.host}${window.location.pathname}${window.location.search}`
+    : null
 
   useEffect(() => {
     if (!open || !address || !isConnected || isWrongChain) {
@@ -110,12 +127,18 @@ export function WalletModal({ open, onClose }: { open: boolean; onClose: () => v
               </div>
               <p className="mt-4 font-display text-base font-semibold">No wallet detected</p>
               <p className="mt-1.5 text-sm text-night/60">
-                Fluxa connects through your browser wallet. Install MetaMask (or another
-                injected wallet), then reload this page to continue.
+                {isMobile
+                  ? 'Mobile browsers cannot open wallet prompts directly. Continue in your wallet app browser.'
+                  : 'Install MetaMask or another browser wallet, then reload this page to continue.'}
               </p>
-              <a href="https://metamask.io/download" target="_blank" rel="noreferrer" className="mt-5 block">
+              <a
+                href={isMobile && mobileWalletUrl ? mobileWalletUrl : 'https://metamask.io/download'}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-5 block"
+              >
                 <Button variant="primary" size="lg" className="w-full">
-                  Get MetaMask
+                  {isMobile ? 'Open in wallet app' : 'Get MetaMask'}
                   <Icons.arrowRight className="size-4" />
                 </Button>
               </a>
@@ -245,7 +268,7 @@ export function WalletModal({ open, onClose }: { open: boolean; onClose: () => v
 
           {errorLine && step !== 'connected' && (
             <p className="app-error mt-4 px-3 py-2 text-center text-xs font-medium">
-              Wallet request was not completed. Try again.
+              {friendlyWalletError(errorLine)}
             </p>
           )}
         </div>

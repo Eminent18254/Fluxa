@@ -28,6 +28,9 @@ export function useWallet() {
 
   const injectedConnector =
     connectors.find((c) => c.type === 'injected') ?? connectors[0];
+  const hasInjectedProvider =
+    typeof window !== 'undefined' &&
+    Boolean((window as Window & { ethereum?: unknown }).ethereum);
 
   // A wallet on the wrong chain is the most common demo failure — surface it
   // as its own state rather than letting reads silently return nothing.
@@ -54,7 +57,7 @@ export function useWallet() {
     isConnecting: isConnecting || status === 'connecting' || status === 'reconnecting',
     isWrongChain,
     isSwitching,
-    hasWallet: Boolean(injectedConnector),
+    hasWallet: Boolean(injectedConnector && hasInjectedProvider),
     nativeBalance: balance.data,
     connect: handleConnect,
     disconnect,

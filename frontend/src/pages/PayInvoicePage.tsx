@@ -508,8 +508,12 @@ function PayButton({
         if (/InsufficientReserve/i.test(message)) throw new Error(`The ${settlementToken} settlement reserve changed and can no longer support this payment. No customer funds moved.`)
         if (/QuoteExceeded/i.test(message)) throw new Error('The live FTSOv2 quote moved by more than 1%. Refresh to approve the new amount.')
         if (/UnsupportedPaymentToken/i.test(message)) throw new Error(`${token} is not accepted for this invoice.`)
+        if (/InvalidStatus/i.test(message)) throw new Error('This invoice is no longer open for payment. Refresh the page to view its current status.')
+        if (/SettlementNotConfigured/i.test(message)) throw new Error('Settlement is not configured for this invoice. Ask the merchant to publish it again.')
+        if (/NotYetDue/i.test(message)) throw new Error('This invoice is not payable yet. Check its due date and refresh the page.')
         if (/IncorrectPaymentAmount|transferFrom|insufficient|balance/i.test(message)) throw new Error(`The payer wallet cannot transfer enough ${token} to this invoice. Check its token balance and allowance.`)
-        throw new Error('Payment could not be prepared. Refresh the quote or try another accepted asset.')
+        const compact = message.replace(/\s+/g, ' ').slice(0, 180)
+        throw new Error(`Payment could not be prepared: ${compact}`)
       }
 
       setPhase('paying')
