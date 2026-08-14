@@ -4,7 +4,7 @@ import { Wordmark } from '@/components/landing/Brand'
 import { paths } from '@/paths'
 
 const steps = [
-  ['01', 'Create an invoice', 'Set a USD amount, due date, accepted payment assets, and the asset you want to receive.'],
+  ['01', 'Create an invoice', 'Set the USD-denominated invoice value, due date, accepted payment assets, and the asset you want to receive. USD is used for pricing, not payment.'],
   ['02', 'Share one link', 'Fluxa publishes the invoice on Coston2 and gives you a customer-ready payment link.'],
   ['03', 'Customer pays', 'The customer selects FXRP or USDT0, reviews a live FTSOv2 quote, and confirms from their wallet.'],
   ['04', 'Settlement completes', 'The contract verifies the payment, checks reserve capacity, and delivers your chosen settlement asset.'],

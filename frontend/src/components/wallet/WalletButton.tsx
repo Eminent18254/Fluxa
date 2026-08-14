@@ -24,7 +24,7 @@ export function WalletButton({
   const { address, isConnected, isConnecting, isWrongChain } = useWallet()
 
   const ringOffset = surface === 'dark' ? 'focus-visible:ring-offset-brand-950' : 'focus-visible:ring-offset-paper'
-  const base = `inline-flex h-10 items-center gap-2 rounded-full px-4 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 focus-visible:ring-offset-2 ${ringOffset}`
+  const base = `inline-flex h-10 max-w-[10.5rem] items-center gap-2 rounded-full px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 focus-visible:ring-offset-2 sm:max-w-none sm:px-4 ${ringOffset}`
 
   const neutral =
     surface === 'dark'
@@ -33,7 +33,7 @@ export function WalletButton({
 
   if (isConnecting) {
     return (
-      <button type="button" onClick={open} className={`${base} ${neutral} ${className}`}>
+      <button type="button" onClick={open} className={`${base} ${neutral} !text-brand-950 ${className}`}>
         <Spinner className="size-4" /> Connecting…
       </button>
     )
@@ -56,7 +56,7 @@ export function WalletButton({
     return (
       <button type="button" onClick={open} className={`${base} ${neutral} ${className}`}>
         <span className="size-2 rounded-full bg-brand-500" />
-        <span className="tabular">{shortenAddress(address)}</span>
+        <span className="tabular truncate">{shortenAddress(address)}</span>
       </button>
     )
   }

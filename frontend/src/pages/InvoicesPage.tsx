@@ -199,6 +199,7 @@ export function InvoicesPage() {
                   <div className="hidden md:block"><p className="text-sm font-medium text-night/65">{dueLabel(invoice)}</p><p className="mt-0.5 text-xs text-night/38">Accepts {invoice.acceptedPaymentAssets.join(' / ')} · settles {invoice.settlementTokenSymbol}</p></div>
                   <div className="flex items-center justify-between md:block"><span className="text-xs text-night/42 md:hidden">Status</span><StatusBadge status={invoice.status} /></div>
                   <div className="flex items-center justify-between md:block md:text-right"><span className="text-xs text-night/42 md:hidden">Amount</span><span className="tabular font-display text-base font-semibold text-night">{formatUsd(invoice.usdAmountNumber)}</span></div>
+                  <span className="inline-flex items-center justify-end gap-1 text-xs font-semibold text-brand-700 md:hidden">{invoice.status === 'OPEN' || invoice.status === 'PENDING' ? 'Share link' : 'View invoice'}<ArrowRight className="size-3.5" /></span>
                   <span className="hidden items-center justify-end gap-1 text-xs font-semibold text-brand-700 md:inline-flex">{invoice.status === 'OPEN' || invoice.status === 'PENDING' ? 'Share link' : 'View invoice'}<ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" /></span>
                 </Link>
               ))}

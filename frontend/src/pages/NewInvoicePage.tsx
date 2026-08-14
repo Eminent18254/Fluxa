@@ -91,7 +91,7 @@ export function NewInvoicePage() {
     const next: Record<string, string> = {}
     if (!title.trim()) next.title = 'Give the invoice a title.'
     if (!amount.trim()) next.amount = 'Enter an amount.'
-    else if (!usdValid) next.amount = 'Enter a positive USD amount with no more than 6 decimals.'
+    else if (!usdValid) next.amount = 'Enter a positive invoice value with no more than 6 decimals.'
     if (acceptedTokens.length === 0) next.assets = 'Select at least one payment asset.'
     if (dueAtFor(dueDate).getTime() <= Date.now()) next.due = 'Choose a future due date.'
     if (customer.trim() && !HEX_ADDRESS.test(customer.trim()))
@@ -209,7 +209,7 @@ export function NewInvoicePage() {
             />
           </Field>
 
-          <Field label="Amount" htmlFor="amount" hint="in USD" error={errors.amount}>
+          <Field label="Invoice value" htmlFor="amount" hint="USD pricing only" error={errors.amount}>
             <div className="relative">
               <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-night/40">$</span>
               <input
@@ -225,7 +225,7 @@ export function NewInvoicePage() {
           </div>
 
           <Field label="Accepted payment assets" htmlFor="accepted-assets" hint="customer chooses" error={errors.assets}>
-            <div id="accepted-assets" className="grid grid-cols-2 gap-2">
+            <div id="accepted-assets" className="grid gap-2 sm:grid-cols-2">
               {TOKEN_SYMBOLS.map((sym) => {
                 const active = acceptedTokens.includes(sym)
                 return (

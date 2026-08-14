@@ -95,7 +95,7 @@ export function PayInvoicePage() {
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-8 sm:px-6 sm:py-12">
+      <main className="mx-auto w-full max-w-2xl flex-1 px-3 py-6 sm:px-6 sm:py-12">
         {loading
           ? <LoadingState label="Loading secure invoice" compact />
           : invoice
@@ -139,17 +139,17 @@ function PayCard({ invoice }: { invoice: PayPageInvoice }) {
         </div>
       </div>
 
-      <div className="px-6 py-6">
+      <div className="px-4 py-5 sm:px-6 sm:py-6">
         {/* What & how much */}
         <h1 className="font-display text-xl font-bold text-night">{invoice.title}</h1>
         {invoice.description && <p className="mt-1.5 text-sm text-night/60">{invoice.description}</p>}
 
-        <div className="mt-6 rounded-3xl border border-brand-100/80 bg-gradient-to-br from-[#eef4ff] via-white to-[#e7efff] p-6 shadow-[inset_0_1px_0_white]">
+        <div className="mt-5 rounded-2xl border border-brand-100/80 bg-gradient-to-br from-[#eef4ff] via-white to-[#e7efff] p-4 shadow-[inset_0_1px_0_white] sm:mt-6 sm:rounded-3xl sm:p-6">
           <p className="text-xs uppercase tracking-wide text-night/40">Amount due</p>
-          <p className="tabular mt-1 font-display text-5xl font-bold tracking-tight text-night">
+          <p className="tabular mt-1 break-words font-display text-4xl font-bold tracking-tight text-night sm:text-5xl">
             {formatUsd(invoice.usdAmountNumber)}
           </p>
-          <p className="mt-1 text-sm text-night/45">Priced in USD · settled in crypto at the live rate</p>
+          <p className="mt-1 text-sm text-night/45">USD invoice value · payment and settlement use supported tokens</p>
         </div>
 
         {payable ? (

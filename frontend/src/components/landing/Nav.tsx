@@ -36,7 +36,7 @@ export function LandingNav() {
           <Wordmark tone="dark" markClassName="size-8" textClassName="text-lg" />
         </a>
 
-        <nav className="liquid-nav hidden items-center gap-1 rounded-full p-1 md:flex">
+        <nav className="hidden items-center gap-1 md:flex">
           {LINKS.map((l) => (
             <a
               key={l.href}

@@ -43,7 +43,7 @@ export function AppLayout() {
       <header className="sticky top-0 z-30 px-3 pt-3 sm:px-5 sm:pt-4">
         <div className="liquid-nav mx-auto grid max-w-7xl grid-cols-[1fr_auto] items-center gap-4 rounded-full px-4 py-2.5 sm:px-5 md:grid-cols-[1fr_auto_1fr]">
           <Link to={paths.invoices} className="w-fit shrink-0 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300">
-            <Wordmark tone="dark" markClassName="size-8" textClassName="text-lg" />
+            <Wordmark tone="dark" markClassName="size-8" textClassName="hidden text-lg sm:inline" />
           </Link>
           <div className="hidden justify-self-center md:block"><WorkspaceNav /></div>
           <div className="justify-self-end"><WalletButton surface="light" /></div>

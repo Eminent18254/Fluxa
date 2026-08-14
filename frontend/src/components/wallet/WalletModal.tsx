@@ -73,17 +73,20 @@ export function WalletModal({ open, onClose }: { open: boolean; onClose: () => v
   async function authenticate() {
     if (!address) return
     try { setAuthenticating(true); setAuthError(null); await signInWithWallet(address); setAuthenticated(true); enterApp() }
-    catch { setAuthError('Wallet sign-in could not be completed. Try again.') }
+    catch (error) {
+      const message = error instanceof Error ? error.message : 'Wallet sign-in could not be completed.'
+      setAuthError(message.length > 180 ? `${message.slice(0, 177)}...` : message)
+    }
     finally { setAuthenticating(false) }
   }
 
   return (
     <Modal open={open} onClose={onClose} labelledBy="wallet-modal-title">
-      <div className="overflow-hidden rounded-t-[2rem] border border-white/80 bg-white/95 text-night shadow-[0_30px_90px_rgba(31,91,237,.2)] ring-1 ring-brand-100/70 backdrop-blur-xl sm:rounded-[2rem]">
+      <div className="overflow-hidden rounded-t-[1.75rem] border border-brand-100 bg-white text-night shadow-[0_28px_80px_rgba(18,55,145,.16)] sm:rounded-[1.75rem]">
         {/* Header */}
-        <div className="flex items-center justify-between bg-gradient-to-br from-[#174fd8] via-[#3976ef] to-[#91bdfb] px-6 py-6 text-white">
+        <div className="flex items-center justify-between border-b border-brand-100/70 bg-white px-5 py-5 sm:px-6">
           <div className="flex items-center gap-3">
-            <span className="grid size-10 place-items-center rounded-2xl border border-white/25 bg-white/15 shadow-lg backdrop-blur-xl"><LogoMark className="size-7" /></span>
+            <span className="grid size-10 place-items-center rounded-xl bg-brand-50 ring-1 ring-brand-100"><LogoMark className="size-7" /></span>
             <h2 id="wallet-modal-title" className="font-display text-lg font-semibold">
               {step === 'connected' ? 'Wallet connected' : 'Connect wallet'}
             </h2>
@@ -99,7 +102,7 @@ export function WalletModal({ open, onClose }: { open: boolean; onClose: () => v
         </div>
 
         {/* Body */}
-        <div className="px-6 pb-7 pt-6">
+        <div className="px-5 pb-6 pt-5 sm:px-6 sm:pb-7 sm:pt-6">
           {step === 'no-wallet' && (
             <div className="text-center">
               <div className="mx-auto grid size-14 place-items-center rounded-2xl bg-brand-50 text-brand-600">
@@ -125,9 +128,9 @@ export function WalletModal({ open, onClose }: { open: boolean; onClose: () => v
                 type="button"
                 onClick={connect}
                 disabled={isConnecting}
-              className="group flex w-full items-center gap-3 rounded-2xl border border-brand-100 bg-gradient-to-br from-[#f0f5ff] via-white to-[#e7efff] p-4 text-left shadow-[0_12px_35px_rgba(36,82,224,.08)] transition-all hover:-translate-y-0.5 hover:border-brand-300 disabled:cursor-wait"
+              className="group flex w-full items-center gap-3 rounded-2xl border border-brand-100 bg-white p-4 text-left shadow-[0_10px_30px_rgba(18,55,145,.06)] transition-all hover:-translate-y-0.5 hover:border-brand-300 hover:bg-brand-50/40 disabled:cursor-wait"
               >
-                <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-brand-600 to-iris-500 text-white shadow-lg shadow-brand-600/20">
+                <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-brand-600 text-white shadow-md shadow-brand-600/15">
                   <Icons.wallet className="size-6" />
                 </span>
                 <span className="min-w-0 flex-1">
@@ -184,14 +187,14 @@ export function WalletModal({ open, onClose }: { open: boolean; onClose: () => v
 
           {step === 'connected' && (
             <div>
-              <div className="rounded-2xl bg-gradient-to-br from-brand-600 via-[#3976ef] to-[#74a9fa] p-5 text-white shadow-[0_18px_45px_rgba(36,82,224,.2)]">
+              <div className="rounded-2xl border border-brand-100 bg-brand-50/55 p-4 shadow-[inset_0_1px_0_white]">
                 <DetailRow label="Wallet">
                   {address ? (
                     <a
                       href={explorerAddress(address)}
                       target="_blank"
                       rel="noreferrer"
-                      className="tabular inline-flex items-center gap-1 font-medium text-white hover:underline"
+                      className="tabular inline-flex items-center gap-1 font-bold text-[#161a24] hover:text-black"
                     >
                       {shortenAddress(address)}
                       <Icons.arrowRight className="size-3.5 -rotate-45" />
@@ -201,14 +204,13 @@ export function WalletModal({ open, onClose }: { open: boolean; onClose: () => v
                   )}
                 </DetailRow>
                 <DetailRow label="Network">
-                  <span className="inline-flex items-center gap-1.5 font-medium text-white">
-                    <span className="size-2 rounded-full bg-white" />
+                  <span className="inline-flex items-center font-semibold text-night">
                     Coston2
                   </span>
                 </DetailRow>
                 {nativeBalance && (
                   <DetailRow label="Balance">
-                    <span className="tabular font-medium">
+                    <span className="tabular font-semibold text-night">
                       {formatAmount(nativeBalance.value, nativeBalance.decimals)}{' '}
                       {nativeBalance.symbol}
                     </span>
@@ -228,12 +230,12 @@ export function WalletModal({ open, onClose }: { open: boolean; onClose: () => v
                 </a>
               )}
 
-              <div className="mt-5 flex gap-3">
+              <div className="mt-5 flex flex-col gap-3 sm:flex-row">
                 <Button variant="primary" size="lg" onClick={authenticated ? enterApp : authenticate} disabled={authenticating || checkingAuth} className="flex-1">
                   {checkingAuth ? <><Spinner className="size-4" /> Preparing…</> : authenticating ? <><Spinner className="size-4" /> Verify in wallet…</> : authenticated ? <>Open app</> : <>Verify wallet</>}
                   <Icons.arrowRight className="size-4" />
                 </Button>
-                <Button variant="secondary" size="lg" onClick={() => disconnect()}>
+                <Button variant="secondary" size="lg" onClick={() => disconnect()} className="w-full sm:w-auto">
                   Disconnect
                 </Button>
               </div>
@@ -255,7 +257,7 @@ export function WalletModal({ open, onClose }: { open: boolean; onClose: () => v
 function DetailRow({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className="flex items-center justify-between py-1.5 text-sm">
-      <span className="font-semibold tracking-[-.01em] text-white/75">{label}</span>
+      <span className="font-semibold text-night/50">{label}</span>
       {children}
     </div>
   )

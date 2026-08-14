@@ -12,8 +12,7 @@ receive. Customers pay with FXRP or USDT0 on Coston2, while Fluxa uses Flare
 FTSOv2 pricing, on-chain verification, and reserve-backed settlement to complete
 the invoice.
 
-> Built for the Flare Summer Signal hackathon, Track 1: Interoperable Asset
-> Products. Fluxa currently runs on the Coston2 testnet and uses test assets only.
+
 
 
 ## Product vision
@@ -47,6 +46,52 @@ the settlement asset; the customer opens one link and pays with an accepted asse
 
 Without Flare, Fluxa would need a centralized price API and could not make its
 current on-chain FXRP payment and cross-asset settlement flow work as designed.
+
+## How Fluxa uses Flare
+
+Fluxa uses Flare as core product infrastructure rather than only as a deployment
+network:
+
+- **FTSOv2 pricing:** the frontend reads the XRP/USD and USDT/USD feeds to convert
+  each USD-denominated invoice value into an exact FXRP or USDT0 payment amount.
+  USD is a pricing denomination only; it is not a supported payment asset.
+- **Coston2 smart contracts:** `FluxaInvoiceV2` publishes invoice terms, restricts
+  accepted assets, protects quotes, prevents duplicate payment, and records the
+  invoice lifecycle on-chain.
+- **Cross-asset settlement:** `FluxaSettlementV2` checks funded reserve capacity,
+  receives the customer's payment asset, and delivers the merchant-selected FXRP
+  or USDT0 settlement asset.
+- **FAssets / FXRP:** FXRP makes XRP-derived value available as an ERC-20-compatible
+  asset inside the EVM invoice and settlement flow.
+- **Flare Data Connector:** a native-XRP verification rail was implemented and
+  tested separately. It is not enabled in the primary V2 checkout demonstrated by
+  the application.
+
+Contract events are synchronized into Supabase so the merchant dashboard can show
+live invoice, payment, and settlement state while retaining links to independently
+verifiable Coston2 evidence.
+
+## Built during the program
+
+The program work moved Fluxa from a designed invoicing concept into a working
+Coston2 application. The team newly built or materially improved:
+
+- Wallet-only merchant authentication backed by Supabase challenges and signature
+  verification, without an email login flow.
+- The `FluxaInvoiceV2` multi-asset invoice contract and `FluxaSettlementV2`
+  reserve-backed settlement contract.
+- FTSOv2-powered FXRP and USDT0 quoting with correct feed exponents and token
+  decimal handling.
+- Same-asset and cross-asset payment execution, quote protection, reserve-capacity
+  checks, and atomic failure when settlement liquidity is insufficient.
+- A public customer checkout with token approval, payment, settlement, and final
+  receipt states.
+- A Supabase data model, restricted public invoice view, realtime merchant updates,
+  and a Coston2 event indexer.
+- A responsive merchant workspace, invoice creation flow, public documentation,
+  and Vercel-ready SPA routing.
+- A separately tested native-XRP/FDC verification path retained outside the primary
+  V2 checkout.
 
 ## Core features
 
@@ -127,6 +172,9 @@ Deployment evidence is stored in
 [`contracts/deployments/coston2.json`](contracts/deployments/coston2.json) and
 [`contracts/deployments/coston2-v2.json`](contracts/deployments/coston2-v2.json).
 
+The primary application uses the V2 invoice and settlement addresses. V1 addresses
+remain configured only so previously created invoice links continue to resolve.
+
 ## Verified end-to-end result
 
 The V2 flow has been completed on Coston2 with two wallets and real testnet
@@ -159,6 +207,20 @@ the contract, service, and frontend test commands below.
 | Native XRP / FDC rail | **Implemented and tested, not enabled in the primary V2 checkout UI:** contracts and Coston2/FDC tests are included in the repository. |
 | Network and funds | **Testnet only:** Coston2 assets have no real value. |
 | Production readiness | **Incomplete:** no independent security audit, production liquidity system, or mainnet deployment has been completed. |
+
+## Roadmap
+
+1. Complete an independent smart-contract and application security review.
+2. Replace the project-funded settlement reserve with a scalable liquidity and
+   rebalancing design.
+3. Promote the separately tested native-XRP/FDC rail into the supported checkout
+   after additional reliability and UX validation.
+4. Add merchant controls for invoice cancellation, settlement reporting, exports,
+   and operational reconciliation.
+5. Expand supported Flare assets only after production-grade liquidity, pricing,
+   and risk controls are available.
+6. Prepare a mainnet deployment after audits, monitoring, incident procedures, and
+   production infrastructure are complete.
 
 
 ## Local setup
@@ -292,23 +354,3 @@ Node.js Version: 22.x
 Add the six public `VITE_*` values shown above. The committed
 [`frontend/vercel.json`](frontend/vercel.json) rewrites direct routes such as
 `/invoices` and `/i/:invoiceId` to the React SPA.
-
-## Security notes
-
-- Supabase Row Level Security protects merchant-owned data.
-- Public payment links read through a restricted database function, not direct
-  anonymous table access.
-- The invoice publishing Edge Function verifies the on-chain receipt and invoice
-  terms before changing a draft to `OPEN`.
-- Contracts protect against duplicate payments, duplicate settlements,
-  unauthorized cancellation, stale or invalid quotes, hostile ERC-20 behavior,
-  and insufficient reserve liquidity.
-- `.env` and `frontend/.env.local` are ignored by Git.
-
-Fluxa is a testnet MVP and has not received an independent production security
-audit. Do not use it with real funds.
-
-## Additional documentation
-
-- [Flare validation](docs/PHASE-0-FLARE-VALIDATION.md)
-- [Flare integration](docs/SPRINT-3-FLARE-INTEGRATION.md)
