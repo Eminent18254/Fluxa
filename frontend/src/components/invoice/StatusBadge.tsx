@@ -28,8 +28,8 @@ const STYLES: Record<InvoiceStatus, { label: string; chip: string; dot: string }
   },
   SETTLED: {
     label: 'Settled',
-    chip: 'bg-iris-400/12 text-iris-600 ring-iris-400/25',
-    dot: 'bg-iris-500',
+    chip: 'bg-brand-100 text-brand-700 ring-brand-200',
+    dot: 'bg-brand-500',
   },
   EXPIRED: {
     label: 'Expired',

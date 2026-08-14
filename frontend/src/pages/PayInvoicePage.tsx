@@ -13,7 +13,7 @@
  * below all exist on `PublicInvoiceView`, so the swap is a data-source change.
  */
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
-import { Link, useParams } from 'react-router'
+import { Link, useParams, useSearchParams } from 'react-router'
 import { Check, Copy, Share2 } from 'lucide-react'
 import type { FeedName, TokenSymbol } from '@/config/flare'
 import type { PublicInvoiceView } from '@/lib/db'
@@ -57,6 +57,8 @@ type PayMethod = {
 
 export function PayInvoicePage() {
   const { invoiceId } = useParams<{ invoiceId: string }>()
+  const [searchParams] = useSearchParams()
+  const merchantView = searchParams.get('view') === 'merchant'
   const configured = hasSupabaseConfig()
   const [invoice, setInvoice] = useState<PayPageInvoice | null>(null)
   const [loading, setLoading] = useState(hasSupabaseConfig())
@@ -101,7 +103,7 @@ export function PayInvoicePage() {
         {loading
           ? <LoadingState label="Loading secure invoice" compact />
           : invoice
-            ? <PayCard invoice={invoice} />
+            ? <PayCard invoice={invoice} merchantView={merchantView} />
             : loadError
               ? <Unavailable />
               : <NotFound />}
@@ -120,13 +122,9 @@ export function PayInvoicePage() {
   )
 }
 
-function PayCard({ invoice }: { invoice: PayPageInvoice }) {
-  const { address } = useWallet()
+function PayCard({ invoice, merchantView }: { invoice: PayPageInvoice; merchantView: boolean }) {
   const payable = invoice.status === 'OPEN' || invoice.status === 'PENDING'
   const done = invoice.status === 'PAID' || invoice.status === 'SETTLED'
-  const isMerchant = Boolean(
-    address && invoice.merchantAddress && address.toLowerCase() === invoice.merchantAddress.toLowerCase(),
-  )
 
   return (
     <div className="rounded-[2.2rem] bg-gradient-to-br from-brand-600 via-[#76a9fb] to-iris-500 p-1.5 shadow-[0_30px_90px_rgba(36,82,224,.22)] sm:p-2">
@@ -159,7 +157,7 @@ function PayCard({ invoice }: { invoice: PayPageInvoice }) {
         </div>
 
         {payable ? (
-          isMerchant ? <MerchantSharePanel invoice={invoice} /> : <PayFlow invoice={invoice} />
+          merchantView ? <MerchantSharePanel invoice={invoice} /> : <PayFlow invoice={invoice} />
         ) : done ? (
           <PaidReceipt invoice={invoice} />
         ) : (
@@ -173,7 +171,7 @@ function PayCard({ invoice }: { invoice: PayPageInvoice }) {
 
 function MerchantSharePanel({ invoice }: { invoice: PayPageInvoice }) {
   const [copied, setCopied] = useState(false)
-  const paymentUrl = typeof window !== 'undefined' ? window.location.href : ''
+  const paymentUrl = typeof window !== 'undefined' ? `${window.location.origin}${paths.pay(invoice.id)}` : ''
 
   async function copyLink() {
     await navigator.clipboard.writeText(paymentUrl)

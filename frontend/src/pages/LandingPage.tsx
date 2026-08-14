@@ -22,12 +22,12 @@ export function LandingPage() {
       <LandingNav />
       <main>
         <Hero />
-        <Features />
-        <ProductPreview />
-        <HowItWorks />
-        <FlareSection />
-        <FaqSection />
-        <FinalCta />
+        <div className="landing-reveal"><Features /></div>
+        <div className="landing-reveal"><ProductPreview /></div>
+        <div className="landing-reveal"><HowItWorks /></div>
+        <div className="landing-reveal"><FlareSection /></div>
+        <div className="landing-reveal"><FaqSection /></div>
+        <div className="landing-reveal"><FinalCta /></div>
       </main>
       <Footer />
     </div>

@@ -49,6 +49,8 @@ function dueLabel(inv: Invoice): string {
 
 export function InvoicesPage() {
   const [filter, setFilter] = useState('all')
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(20)
   const [invoices, setInvoices] = useState<Invoice[]>([])
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState(false)
@@ -57,6 +59,14 @@ export function InvoicesPage() {
   const [sessionReady, setSessionReady] = useState(false)
   const [sessionChecking, setSessionChecking] = useState(true)
   const tokenBalances = useTokenBalances(address)
+
+  useEffect(() => {
+    const desktop = window.matchMedia('(min-width: 768px)')
+    const update = () => setPageSize(desktop.matches ? 20 : 10)
+    update()
+    desktop.addEventListener('change', update)
+    return () => desktop.removeEventListener('change', update)
+  }, [])
 
   useEffect(() => {
     let active = true
@@ -135,9 +145,17 @@ export function InvoicesPage() {
     const current = FILTERS.find((item) => item.key === filter)
     return current?.statuses ? invoices.filter((invoice) => current.statuses!.includes(invoice.status)) : invoices
   }, [filter, invoices])
+  const totalPages = Math.max(1, Math.ceil(visible.length / pageSize))
+  const paginatedInvoices = useMemo(
+    () => visible.slice((page - 1) * pageSize, page * pageSize),
+    [page, pageSize, visible],
+  )
+
+  useEffect(() => { setPage(1) }, [filter, pageSize])
+  useEffect(() => { if (page > totalPages) setPage(totalPages) }, [page, totalPages])
 
   if (isConnecting) return <LoadingState label="Connecting wallet" />
-  if (!isConnected || !address) return <MerchantGate title="Your invoices stay private" body="Connect the merchant wallet that owns this workspace." action="Connect wallet" onAction={openWallet} />
+  if (!isConnected || !address) return <MerchantGate title="Connect your wallet" body="Connect to view and manage your invoices." action="Connect wallet" onAction={openWallet} />
   if (isWrongChain) return <MerchantGate title="Switch to Coston2" body="Fluxa invoices and balances are available on the Coston2 testnet." action="Switch network" onAction={openWallet} />
   if (sessionChecking) return <LoadingState label="Opening invoices" />
   if (!sessionReady) return <MerchantGate title="Confirm your wallet session" body="Sign once to unlock your private invoice workspace." action="Continue" onAction={openWallet} />
@@ -190,8 +208,8 @@ export function InvoicesPage() {
               <span>Invoice</span><span>Terms</span><span>Status</span><span className="text-right">Amount</span><span />
             </div>
             <div className="space-y-2 px-2 pb-2 pt-2">
-              {visible.map((invoice) => (
-                <Link key={invoice.id} to={paths.pay(invoice.id)} className="group relative grid gap-3 overflow-hidden rounded-2xl border border-brand-100/80 bg-white/72 px-3 py-4 shadow-[0_8px_26px_rgba(36,82,224,.06),inset_0_1px_0_rgba(255,255,255,.9)] backdrop-blur-xl transition-all before:absolute before:inset-y-3 before:left-0 before:w-1 before:rounded-full before:bg-gradient-to-b before:from-brand-400 before:to-iris-400 hover:-translate-y-0.5 hover:border-brand-200 hover:bg-white hover:shadow-[0_14px_38px_rgba(36,82,224,.12)] sm:px-4 md:grid-cols-[minmax(0,1.5fr)_minmax(10rem,.8fr)_8rem_8rem_6rem] md:items-center md:gap-4">
+              {paginatedInvoices.map((invoice) => (
+                <Link key={invoice.id} to={`${paths.pay(invoice.id)}${invoice.status === 'OPEN' || invoice.status === 'PENDING' ? '?view=merchant' : ''}`} className="group relative grid gap-3 overflow-hidden rounded-2xl border border-brand-100/80 bg-white/72 px-3 py-4 shadow-[0_8px_26px_rgba(36,82,224,.06),inset_0_1px_0_rgba(255,255,255,.9)] backdrop-blur-xl transition-all before:absolute before:inset-y-3 before:left-0 before:w-1 before:rounded-full before:bg-gradient-to-b before:from-brand-400 before:to-iris-400 hover:-translate-y-0.5 hover:border-brand-200 hover:bg-white hover:shadow-[0_14px_38px_rgba(36,82,224,.12)] sm:px-4 md:grid-cols-[minmax(0,1.5fr)_minmax(10rem,.8fr)_8rem_8rem_6rem] md:items-center md:gap-4">
                   <div className="flex min-w-0 items-center gap-3">
                     <ActivityMark status={invoice.status} />
                     <div className="min-w-0"><p className="truncate text-sm font-semibold text-night">{invoice.title}</p><p className="mt-0.5 truncate text-xs text-night/42">{invoice.customerAddress ? shortenAddress(invoice.customerAddress) : 'Open payment link'}{invoice.description ? ` · ${invoice.description}` : ''}</p></div>
@@ -205,6 +223,20 @@ export function InvoicesPage() {
               ))}
             </div>
           </div>
+        )}
+        {!loadError && !loading && visible.length > pageSize && (
+          <nav className="mt-4 flex items-center justify-between gap-3 rounded-2xl border border-brand-100/80 bg-white/75 px-3 py-2.5 shadow-sm backdrop-blur-xl sm:px-4" aria-label="Invoice pages">
+            <button type="button" onClick={() => setPage((current) => Math.max(1, current - 1))} disabled={page === 1} className="inline-flex size-10 items-center justify-center rounded-xl text-brand-700 transition-colors hover:bg-brand-50 disabled:cursor-not-allowed disabled:opacity-30" aria-label="Previous invoice page">
+              <ArrowRight className="size-4.5 rotate-180" />
+            </button>
+            <div className="text-center">
+              <p className="text-sm font-semibold text-night">Page {page} of {totalPages}</p>
+              <p className="mt-0.5 text-xs text-night/42">{visible.length} invoices</p>
+            </div>
+            <button type="button" onClick={() => setPage((current) => Math.min(totalPages, current + 1))} disabled={page === totalPages} className="inline-flex size-10 items-center justify-center rounded-xl text-brand-700 transition-colors hover:bg-brand-50 disabled:cursor-not-allowed disabled:opacity-30" aria-label="Next invoice page">
+              <ArrowRight className="size-4.5" />
+            </button>
+          </nav>
         )}
       </section>
     </div>

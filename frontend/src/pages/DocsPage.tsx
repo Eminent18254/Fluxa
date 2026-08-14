@@ -15,7 +15,7 @@ export function DocsPage() {
     <div className="app-shell min-h-dvh text-night">
       <header className="px-4 pt-4 sm:px-8 sm:pt-6"><div className="mx-auto flex max-w-5xl items-center justify-between"><Link to={paths.landing}><Wordmark tone="dark" markClassName="size-9" textClassName="text-xl" /></Link><Link to={paths.invoices} className="inline-flex items-center gap-2 rounded-full border border-brand-100 bg-white/75 px-4 py-2 text-sm font-semibold text-brand-700 shadow-sm">Open app <ArrowUpRight className="size-4" /></Link></div></header>
       <main className="mx-auto max-w-5xl space-y-8 px-4 pb-16 pt-8 sm:px-8 sm:pt-12">
-      <section className="grain-overlay relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-[#174fd8] via-[#3976ef] to-[#9ac3fb] px-6 py-8 text-white shadow-[0_28px_80px_rgba(31,91,237,.22)] sm:px-10 sm:py-11">
+      <section className="grain-overlay relative overflow-hidden rounded-[2rem] bg-[#4f89f2] px-6 py-8 text-white shadow-[0_28px_80px_rgba(31,91,237,.20)] sm:px-10 sm:py-11">
         <div className="absolute -right-20 -top-24 size-72 rounded-full border-[3.5rem] border-white/10" />
         <div className="relative max-w-2xl">
           <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/12 px-3 py-1.5 text-xs font-semibold backdrop-blur-xl"><BookOpen className="size-3.5" /> Fluxa docs</span>
@@ -32,7 +32,7 @@ export function DocsPage() {
 
       <section className="app-panel rounded-3xl p-6 sm:p-8">
         <div className="flex items-end justify-between gap-4"><div><p className="text-xs font-semibold uppercase tracking-[.14em] text-brand-600">The complete flow</p><h2 className="mt-2 font-display text-2xl font-semibold text-night">From invoice to settlement</h2></div><Link to={paths.newInvoice} className="hidden items-center gap-1.5 text-sm font-semibold text-brand-700 sm:inline-flex">Create invoice <ArrowUpRight className="size-4" /></Link></div>
-        <div className="mt-7 grid gap-3 md:grid-cols-4">{steps.map(([number, title, body]) => <div key={number} className="rounded-2xl border border-brand-100/80 bg-gradient-to-br from-[#f1f5ff] via-white to-brand-50/70 p-5"><span className="font-display text-sm font-semibold text-brand-500">{number}</span><h3 className="mt-8 font-display text-lg font-semibold text-night">{title}</h3><p className="mt-2 text-sm leading-relaxed text-night/52">{body}</p></div>)}</div>
+        <div className="mt-7 grid gap-3 md:grid-cols-4">{steps.map(([number, title, body]) => <div key={number} className="rounded-2xl border border-brand-100/80 bg-brand-50/60 p-5"><span className="font-display text-sm font-semibold text-brand-500">{number}</span><h3 className="mt-8 font-display text-lg font-semibold text-night">{title}</h3><p className="mt-2 text-sm leading-relaxed text-night/52">{body}</p></div>)}</div>
       </section>
 
       <section className="grid gap-5 lg:grid-cols-2">
@@ -52,7 +52,7 @@ export function DocsPage() {
   )
 }
 
-function DocCard({ icon, title, body }: { icon: React.ReactNode; title: string; body: string }) { return <div className="app-panel rounded-2xl p-5"><span className="grid size-10 place-items-center rounded-xl bg-gradient-to-br from-brand-600 to-iris-500 text-white shadow-lg shadow-brand-600/15">{icon}</span><h3 className="mt-5 font-display font-semibold text-night">{title}</h3><p className="mt-2 text-sm leading-relaxed text-night/52">{body}</p></div> }
+function DocCard({ icon, title, body }: { icon: React.ReactNode; title: string; body: string }) { return <div className="app-panel rounded-2xl p-5"><span className="grid size-10 place-items-center rounded-xl bg-brand-600 text-white shadow-lg shadow-brand-600/15">{icon}</span><h3 className="mt-5 font-display font-semibold text-night">{title}</h3><p className="mt-2 text-sm leading-relaxed text-night/52">{body}</p></div> }
 function Asset({ symbol, detail, icon }: { symbol: string; detail: string; icon: React.ReactNode }) { return <div className="flex items-center gap-3 rounded-2xl border border-brand-100 bg-white/70 p-3"><span className="grid size-10 place-items-center rounded-xl bg-brand-600 text-white">{icon}</span><div><p className="font-semibold text-night">{symbol}</p><p className="text-xs text-night/48">{detail}</p></div><Check className="ml-auto size-4 text-brand-500" /></div> }
 function Guide({ title, items }: { title: string; items: string[] }) { return <div className="app-panel rounded-3xl p-6 sm:p-8"><h2 className="font-display text-2xl font-semibold text-night">{title}</h2><ol className="mt-6 space-y-4">{items.map((item,index)=><li key={item} className="flex gap-3 text-sm leading-relaxed text-night/58"><span className="grid size-6 shrink-0 place-items-center rounded-full bg-brand-600 text-[.65rem] font-bold text-white">{index+1}</span>{item}</li>)}</ol></div> }
 function ReceiptIcon() { return <Link2 className="size-5" /> }

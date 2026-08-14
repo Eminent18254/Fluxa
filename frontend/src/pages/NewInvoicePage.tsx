@@ -326,7 +326,7 @@ export function NewInvoicePage() {
               Cancel
             </Link>
           </div>
-          {submitError && <p className="app-error px-3.5 py-3 text-sm font-medium">Invoice could not be published. Check your wallet and try again.</p>}
+          {submitError && <div className="app-error px-3.5 py-3 text-sm"><div><p className="font-semibold">Invoice could not be published</p><p className="mt-0.5 text-xs text-danger-500/80">{submitError}</p></div></div>}
         </div>
 
       </form>

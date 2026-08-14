@@ -12,7 +12,7 @@ export function Hero() {
   useEffect(() => {
     const desktop = window.matchMedia('(min-width: 640px)')
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)')
-    const update = () => setCoinMode({ show: true, compact: !desktop.matches, motion: !reduced.matches })
+    const update = () => setCoinMode({ show: desktop.matches, compact: false, motion: !reduced.matches })
     update()
     desktop.addEventListener('change', update)
     reduced.addEventListener('change', update)
@@ -28,7 +28,7 @@ export function Hero() {
       </Suspense>}
       <div className="absolute inset-x-0 bottom-0 z-[3] h-10 bg-white sm:h-14" aria-hidden="true" />
 
-      <div className="relative z-10 mx-auto flex max-w-4xl flex-col items-center px-5 pb-28 pt-[19rem] text-center sm:px-6 sm:pb-52 sm:pt-[24.5rem]">
+      <div className="relative z-10 mx-auto flex max-w-4xl flex-col items-center px-5 pb-28 pt-36 text-center sm:px-6 sm:pb-52 sm:pt-[24.5rem]">
         <h1 className="max-w-3xl font-display text-[3rem] font-medium leading-[0.98] tracking-[-0.06em] text-white sm:text-6xl md:text-[4.65rem]">
           Crypto invoices.<br className="hidden sm:block" /> Settlement on your terms.
         </h1>

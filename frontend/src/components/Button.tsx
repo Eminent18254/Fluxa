@@ -11,7 +11,7 @@ type Variant = 'primary' | 'secondary' | 'ghost' | 'danger'
 type Size = 'sm' | 'md' | 'lg'
 
 const VARIANTS: Record<Variant, string> = {
-  primary: 'premium-button bg-gradient-to-b from-[#4c7ff0] to-brand-700 text-white hover:brightness-105 shadow-[inset_0_1px_0_rgba(255,255,255,.38),0_12px_28px_rgba(36,82,224,.24)]',
+  primary: 'premium-button bg-brand-600 text-white hover:bg-brand-500 shadow-[inset_0_1px_0_rgba(255,255,255,.28),0_12px_28px_rgba(36,82,224,.20)]',
   secondary: 'border border-brand-100 bg-white/78 text-brand-700 hover:border-brand-200 hover:bg-white backdrop-blur-xl shadow-[inset_0_1px_0_white,0_8px_24px_rgba(18,55,145,.06)]',
   ghost: 'text-brand-700 hover:bg-brand-50/80',
   danger: 'border border-danger-500/20 bg-white text-danger-500 hover:bg-danger-500/5',
