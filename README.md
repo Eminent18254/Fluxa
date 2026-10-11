@@ -1,356 +1,220 @@
-<p align="center">
-  <img src="docs/assets/fluxa-logo.svg" alt="Fluxa" width="420" />
-</p>
-
 # Fluxa
 
-**Crypto invoices with flexible payment and settlement on Flare.**
+![React](https://img.shields.io/badge/React-19-087EA4?logo=react&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-4-06B6D4?logo=tailwindcss&logoColor=white)
+![GenLayer](https://img.shields.io/badge/GenLayer-Intelligent%20Contract-5B4FE9)
+![Studionet](https://img.shields.io/badge/Studionet-chain%2061999-1F8A70)
+![SQLite](https://img.shields.io/badge/SQLite-local%20projection-003B57?logo=sqlite&logoColor=white)
 
-Fluxa lets a merchant create a USD-denominated invoice, choose which assets a
-customer may pay with, and separately choose the asset the merchant wants to
-receive. Customers pay with FXRP or USDT0 on Coston2, while Fluxa uses Flare
-FTSOv2 pricing, on-chain verification, and reserve-backed settlement to complete
-the invoice.
+**An invoice is paid when the evidence proves it.** Fluxa is evidence-backed commercial obligations on **GenLayer Intelligent Contracts**. A merchant records an obligation - amount, currency, due date, buyer - together with an evidence manifest. A GenLayer validator committee then reads the evidence against those published terms and writes a bounded decision on chain. Only a recognized decision unlocks the payment path, and only the recorded buyer can record that payment.
 
+> Fluxa is the answer to one specific problem: proof. On a normal invoicing tool the merchant asserts the invoice is real and the buyer has to take their word for it, or a human team has to read the paperwork. Fluxa replaces that trust with a validator committee. Independent validators evaluate the evidence against the terms stored in the contract and must agree on the result - a decision, a confidence band and the specific inconsistencies - before it is accepted. The committee never pays anyone and never moves funds; it decides whether the evidence supports the obligation, and the terms of that decision are public.
 
+The key idea is simple. **The commercial terms are stored on chain before the evidence is judged, and the verdict is produced by consensus rather than by the party who benefits from it.** A merchant knows exactly what has to be proven, and a reader can see exactly which part of the evidence failed to line up.
 
+Fluxa runs on **GenLayer Studionet** with test funds only.
 
-## Product vision
+## Deployed Contract
 
-Fluxa's vision is to make cross-asset crypto commerce feel as clear as ordinary
-invoicing. A merchant should be able to state a price in familiar business terms
-and receive a preferred settlement asset, while the customer pays with a supported
-asset already in their wallet. Flare supplies the decentralized pricing and
-interoperable asset infrastructure that turns that choice into verifiable
-settlement.
+| | |
+|---|---|
+| **Contract address** | `0x9eBE9664a68faA688FB95F058c30763a25846b79` |
+| **Explorer link** | https://explorer-studio.genlayer.com/address/0x9eBE9664a68faA688FB95F058c30763a25846b79 |
+| Network | GenLayer Studionet, chain 61999 |
+| RPC | `https://studio.genlayer.com/api` |
+| Deploy transaction | https://explorer-studio.genlayer.com/tx/0x39bfe57733ac374cbf0285fcbc8241348b4af990cdece8a0d0ed2c44b67328a0 |
+| Source | `genlayer/contracts/FluxaObligation.py` |
+| Runtime | `py-genlayer:1jb45aa8ynh2a9c9xn3b7qqh8sm5q93hwfp7jqmwsfhh8jpz09h6` |
+| Redeploy | `npm run deploy:contract` |
 
-## Problem and users
+> **Direct link:** https://explorer-studio.genlayer.com/address/0x9eBE9664a68faA688FB95F058c30763a25846b79
 
-Fluxa is built for freelancers, agencies, digital merchants, and online businesses
-that want to accept crypto without forcing every customer to acquire one specific
-token or forcing the merchant to keep an unwanted asset. Existing crypto payment
-flows commonly couple the asset spent by the customer to the asset received by the
-merchant, leaving pricing, conversion, and reconciliation as manual work.
-
-Fluxa separates those decisions: the merchant creates a USD invoice and chooses
-the settlement asset; the customer opens one link and pays with an accepted asset.
-
-## Why Flare is required
-
-| Flare capability | What it does in Fluxa |
-| --- | --- |
-| FTSOv2 | Supplies decentralized XRP/USD and USDT/USD prices for invoice quotes and cross-asset settlement calculations. |
-| FAssets / FXRP | Makes XRP-derived value usable by Fluxa's EVM contracts as a supported six-decimal payment and settlement asset. |
-| Coston2 EVM | Enforces invoice state, quote protection, token movement, reserve checks, and settlement evidence on-chain. |
-| Flare Data Connector | Powers the separately implemented and tested native-XRP verification rail. This rail is not enabled in the primary V2 checkout demo. |
-
-Without Flare, Fluxa would need a centralized price API and could not make its
-current on-chain FXRP payment and cross-asset settlement flow work as designed.
-
-## How Fluxa uses Flare
-
-Fluxa uses Flare as core product infrastructure rather than only as a deployment
-network:
-
-- **FTSOv2 pricing:** the frontend reads the XRP/USD and USDT/USD feeds to convert
-  each USD-denominated invoice value into an exact FXRP or USDT0 payment amount.
-  USD is a pricing denomination only; it is not a supported payment asset.
-- **Coston2 smart contracts:** `FluxaInvoiceV2` publishes invoice terms, restricts
-  accepted assets, protects quotes, prevents duplicate payment, and records the
-  invoice lifecycle on-chain.
-- **Cross-asset settlement:** `FluxaSettlementV2` checks funded reserve capacity,
-  receives the customer's payment asset, and delivers the merchant-selected FXRP
-  or USDT0 settlement asset.
-- **FAssets / FXRP:** FXRP makes XRP-derived value available as an ERC-20-compatible
-  asset inside the EVM invoice and settlement flow.
-- **Flare Data Connector:** a native-XRP verification rail was implemented and
-  tested separately. It is not enabled in the primary V2 checkout demonstrated by
-  the application.
-
-Contract events are synchronized into Supabase so the merchant dashboard can show
-live invoice, payment, and settlement state while retaining links to independently
-verifiable Coston2 evidence.
-
-## Built during the program
-
-The program work moved Fluxa from a designed invoicing concept into a working
-Coston2 application. The team newly built or materially improved:
-
-- Wallet-only merchant authentication backed by Supabase challenges and signature
-  verification, without an email login flow.
-- The `FluxaInvoiceV2` multi-asset invoice contract and `FluxaSettlementV2`
-  reserve-backed settlement contract.
-- FTSOv2-powered FXRP and USDT0 quoting with correct feed exponents and token
-  decimal handling.
-- Same-asset and cross-asset payment execution, quote protection, reserve-capacity
-  checks, and atomic failure when settlement liquidity is insufficient.
-- A public customer checkout with token approval, payment, settlement, and final
-  receipt states.
-- A Supabase data model, restricted public invoice view, realtime merchant updates,
-  and a Coston2 event indexer.
-- A responsive merchant workspace, invoice creation flow, public documentation,
-  and Vercel-ready SPA routing.
-- A separately tested native-XRP/FDC verification path retained outside the primary
-  V2 checkout.
-
-## Core features
-
-- Wallet-only merchant authentication; no email account is required.
-- USD-denominated invoices with shareable public payment links.
-- Merchant-selected payment assets: FXRP, USDT0, or both.
-- A separate merchant-selected settlement asset.
-- Live FTSOv2 quotes with exact token amounts and quote protection.
-- Reserve-capacity checks before cross-asset payment.
-- Atomic payment behavior when reserve liquidity is insufficient.
-- Same-asset and cross-asset settlement on Coston2.
-- Supabase-backed invoice history, realtime status updates, and public invoice views.
-- A chain indexer that records payment and settlement evidence in Supabase.
-- Backward compatibility for existing V1 invoices and payment links.
-
-C2FLR is used only for Coston2 gas. It is not an invoice payment asset.
-
-## How it works
-
-```mermaid
-flowchart LR
-    M[Merchant] -->|Creates USD invoice| UI[Fluxa web app]
-    UI -->|Publishes invoice| IV2[FluxaInvoiceV2]
-    C[Customer] -->|Chooses FXRP or USDT0| UI
-    UI -->|Reads live quote| FTSO[Flare FTSOv2]
-    UI -->|Pays invoice| IV2
-    IV2 -->|Reserves settlement liquidity| SV2[FluxaSettlementV2]
-    SV2 -->|Merchant-selected asset| M
-    IV2 -->|Events| IDX[Fluxa indexer]
-    SV2 -->|Events| IDX
-    IDX --> DB[(Supabase)]
-    DB -->|Realtime invoice state| UI
-```
-
-For a cross-asset payment, the merchant's settlement asset is delivered from
-the funded settlement reserve. The asset paid by the customer remains in the
-settlement contract and replenishes the other side of the reserve inventory.
-
-## Technology
-
-| Layer | Technology |
-| --- | --- |
-| Frontend | React 19, TypeScript, Vite, Tailwind CSS |
-| Wallet and chain | Wagmi, Viem, Flare Coston2 |
-| Smart contracts | Solidity, Hardhat, OpenZeppelin |
-| Pricing | Flare FTSOv2 |
-| Database and auth | Supabase PostgreSQL, RLS, Edge Functions |
-| Event synchronization | Node.js, TypeScript, Ethers, Supabase |
-| Hosting | Vercel-ready SPA configuration |
-
-## Repository structure
-
-```text
-Fluxa/
-|-- contracts/   Solidity contracts, tests, deployment and reserve scripts
-|-- database/    Ordered Supabase migrations
-|-- docs/        Flare validation and implementation notes
-|-- frontend/    React merchant workspace and public checkout
-|-- services/    Coston2 event indexer
-|-- supabase/    Edge Functions and function configuration
-|-- README.md
-```
-
-## Coston2 deployment
-
-| Contract or token | Address |
-| --- | --- |
-| FluxaInvoice V1 | `0x3cEb0760C7F2bd58B1D2A60813112CFC42E9D9e4` |
-| FluxaSettlement V1 | `0x4fAAa888a4D220D060a1323a9831d846B055F0D2` |
-| FluxaPriceOracle | `0xc7705bE0dac98590F28c738Ffc8b2C1e5282620c` |
-| FluxaFdcPaymentRail | `0xB16d796F7eF09eF7c14644AaFAcc59013FBB15f8` |
-| FluxaInvoiceV2 | `0xa7a76084C0AD139504Ef1184f2d0A6054c019aA0` |
-| FluxaSettlementV2 | `0x7F4b2E77f0BbCA9856c620F5606a9618809eE34a` |
-| FXRP | `0x0b6A3645c240605887a5532109323A3E12273dc7` |
-| USDT0 | `0xC1A5B41512496B80903D1f32d6dEa3a73212E71F` |
-
-Deployment evidence is stored in
-[`contracts/deployments/coston2.json`](contracts/deployments/coston2.json) and
-[`contracts/deployments/coston2-v2.json`](contracts/deployments/coston2-v2.json).
-
-The primary application uses the V2 invoice and settlement addresses. V1 addresses
-remain configured only so previously created invoice links continue to resolve.
-
-## Verified end-to-end result
-
-The V2 flow has been completed on Coston2 with two wallets and real testnet
-transactions:
-
-| Evidence | Verified value |
-| --- | --- |
-| Invoice | `$2.00`, contract version 2, invoice ID `514e5782-9fa1-42ec-9234-73a4100e7e08` |
-| Customer payment | `1.998326 FXRP` |
-| Merchant settlement | `2.002223 USDT0` |
-| Final indexed status | `SETTLED` |
-| Payment transaction | [`0x3e273a...a49a51d`](https://coston2-explorer.flare.network/tx/0x3e273af35be221c5059cf4bbfdb62e1f7671addd3ea20de0fc6775b78a49a51d) |
-| Settlement transaction | [`0x9e13e3...f2a3c967`](https://coston2-explorer.flare.network/tx/0x9e13e39628fa685d86ffbca9f5720b4a08976e4eceb98adbe00cb830f2a3c967) |
-
-Judges can independently verify the transactions in the Coston2 explorer, inspect
-the V2 contracts at the addresses above, and reproduce the implementation through
-the contract, service, and frontend test commands below.
-
-## What is real, trusted, mocked, or incomplete
-
-| Area | Current status |
-| --- | --- |
-| Merchant wallet authentication | **Real:** wallet challenge and signature verification through a deployed Supabase Edge Function. |
-| Invoice creation and publication | **Real:** persisted in Supabase and published to `FluxaInvoiceV2` on Coston2. |
-| FXRP and USDT0 checkout | **Real:** live Coston2 token approvals, payments, reserve checks, and settlement. |
-| Pricing | **Real:** the browser reads FTSOv2 contracts directly; no mock price API is used in the live app. |
-| Merchant invoice state | **Real:** indexed chain events are stored in Supabase; the dashboard uses database realtime updates with a 15-second polling fallback. |
-| Cross-asset liquidity | **Trusted MVP component:** settlement comes from a project-funded reserve contract. This is not a DEX swap or permissionless liquidity network. |
-| Landing-page invoice illustration | **Illustrative:** the `$500` card is a static product example, not a live invoice. Dashboard and public payment-link data are live. |
-| Native XRP / FDC rail | **Implemented and tested, not enabled in the primary V2 checkout UI:** contracts and Coston2/FDC tests are included in the repository. |
-| Network and funds | **Testnet only:** Coston2 assets have no real value. |
-| Production readiness | **Incomplete:** no independent security audit, production liquidity system, or mainnet deployment has been completed. |
-
-## Roadmap
-
-1. Complete an independent smart-contract and application security review.
-2. Replace the project-funded settlement reserve with a scalable liquidity and
-   rebalancing design.
-3. Promote the separately tested native-XRP/FDC rail into the supported checkout
-   after additional reliability and UX validation.
-4. Add merchant controls for invoice cancellation, settlement reporting, exports,
-   and operational reconciliation.
-5. Expand supported Flare assets only after production-grade liquidity, pricing,
-   and risk controls are available.
-6. Prepare a mainnet deployment after audits, monitoring, incident procedures, and
-   production infrastructure are complete.
-
-
-## Local setup
-
-### Requirements
-
-- Node.js 22 recommended
-- npm
-- A browser wallet that supports custom EVM networks
-- A Supabase project
-- Coston2 test assets from the [Flare faucet](https://faucet.flare.network/coston2)
-
-### 1. Install dependencies
+The contract was deployed with the GenLayer CLI, and the address is verified by reading the live state:
 
 ```bash
-git clone <your-github-repository-url>
+genlayer call 0x9eBE9664a68faA688FB95F058c30763a25846b79 get_state
+```
+
+## Live Deployment
+
+| | |
+|---|---|
+| **Repository** | https://github.com/REPLACE-WITH-YOUR-GITHUB-REPO |
+| App contract | `0x9eBE9664a68faA688FB95F058c30763a25846b79` (Studionet 61999) |
+
+The deployment is the static bundle produced by `npm run build`. `frontend/vercel.json` supplies the SPA rewrites, so a hard refresh on any route resolves to the bundle. The only runtime configuration the bundle needs is the contract address, and that address is compiled in, so a host with no environment variables still boots against the live deployment.
+
+## How Fluxa Works
+
+1. **Record the obligation.** The merchant calls `create_obligation` with a reference, the buyer's wallet, a currency, an amount in minor units, a due date, and an evidence manifest (an HTTPS URL plus its `sha256:` digest). The caller becomes the merchant. The reference is unique and the buyer must be a real address.
+2. **Ask the committee to verify.** The merchant calls `submit_verification` with the evidence text. The nodes copy the obligation and the evidence into a non-deterministic block, each run the same prompt against an LLM, and consensus compares only the bounded fields.
+3. **Read the decision.** The committee returns one of `VERIFIED`, `REJECTED` or `MORE_EVIDENCE_REQUIRED`, plus a confidence band (`HIGH`, `MEDIUM`, `LOW`) and a list of the specific inconsistencies. The decision, the band, the reason, the revision counters and the policy version are written on chain.
+4. **Replace evidence if asked.** When the decision is `MORE_EVIDENCE_REQUIRED`, the merchant can call `replace_evidence` to attach a new manifest. The evidence revision counter moves so a later reader can tell the decision was made against different bytes.
+5. **Record the payment.** Once the obligation is `VERIFIED`, the recorded buyer calls `record_payment` with a payment reference. That flips the obligation to `PAID`.
+
+Statuses are the contract's own bounded enum - `SUBMITTED`, `VERIFIED`, `REJECTED`, `MORE_EVIDENCE_REQUIRED`, `PAID` - and the UI shows them verbatim. A screen that said "open" when the contract says `MORE_EVIDENCE_REQUIRED` would be lying about the one thing the merchant has to act on.
+
+## What Makes Fluxa Different
+
+### 1. The judge is not the payer
+
+The merchant benefits from a `VERIFIED` decision, so the merchant cannot be the only opinion on whether the evidence is real. The verdict comes from a validator committee. The committee's fields are published so anyone can inspect what was decided and why.
+
+### 2. Free-form model output never controls state
+
+Consensus compares a bounded decision enum, a bounded confidence band and a bounded inconsistency list. Prose reasons are stored but not compared, because two correct runs of a model will never phrase a paragraph identically. Anything the model returns outside the supported set is rejected before it can reach state.
+
+### 3. Evidence is treated as hostile
+
+The prompt tells the committee explicitly that the evidence is untrusted content and that instructions inside it must never be followed. The digest the merchant declared is stored next to every decision, so a later reader can tell which bytes were judged without re-reading them - and a replaced manifest is visible as a revision bump rather than a silent swap.
+
+## The User Journey
+
+| Path | Screen |
+|---|---|
+| `/` | Landing page |
+| `/invoices` | Obligations the connected wallet can see - created or payable |
+| `/invoices/new` | Record an obligation and run verification |
+| `/invoices/:id` | Obligation detail, decision record and the payment path |
+| `/docs` | How the verification model works |
+
+A first-time visitor meets the product story at `/`. Connecting a wallet with no obligations yet shows an empty state rather than a broken list.
+
+## Why GenLayer
+
+The hard part of an evidence-backed obligation is not storage, it is judgment. A deterministic contract cannot read an invoice PDF and decide whether the amount, the parties and the dates line up; an oracle that answers with a single trusted key just moves the trust to that key. GenLayer is the only piece that makes the design work: a validator committee runs the same evaluation independently and has to agree on bounded output before it is written to state. The contract stores the terms, the evidence digest, the decision and its revision history - and nothing about the verdict depends on a server Fluxa operates.
+
+## Architecture
+
+```
+genlayer/
+  contracts/FluxaObligation.py   the Intelligent Contract (Python, pinned runtime)
+frontend/
+  src/config/genlayer.ts          the one chain and the deployed address
+  src/lib/genlayer/client.ts      the only module that talks to GenLayer
+  src/lib/obligations.ts          the domain model, mirrored from the contract
+  src/pages/                      the screens
+api/
+  src/contract.ts                 server-side reads of the contract
+  src/db.ts                       SQLite (node:sqlite) obligations + decisions
+  src/sync.ts                     one-shot contract -> SQLite projection
+  src/server.ts                   read-only HTTP API over the SQLite mirror
+```
+
+**The frontend is the product.** Every screen reads the contract directly through `genlayer-js`, so the app works with nothing running beside it. Reads need no wallet, so an obligation link opens for anyone.
+
+**The API is a mirror, never a source of truth.** `api/` syncs the contract's public views into a local SQLite file with `node:sqlite` - no hosted database, no service keys, no third-party credentials - and serves read-only queries over it. The file is created on first run at `api/data/fluxa.sqlite`. If it is deleted, `npm run sync` rebuilds it from chain. The contract is always authoritative; the mirror exists so historical queries and counting do not have to re-walk chain state.
+
+### Contract surface
+
+| Method | Kind | Purpose |
+|---|---|---|
+| `create_obligation` | write | Record the terms; caller becomes the merchant |
+| `submit_verification` | write | Run the committee over the evidence |
+| `replace_evidence` | write | Swap the manifest while more evidence is requested |
+| `record_payment` | write | The recorded buyer marks a verified obligation paid |
+| `get_state` | view | Obligations, policy version and count in one call |
+| `get_obligation` | view | One obligation by id |
+| `get_obligations` | view | Every obligation, newest first |
+| `get_my_obligations` | view | Obligations where an address is the merchant |
+| `get_payable_obligations` | view | Obligations where an address is the buyer |
+
+## Non-Custodial by Design
+
+Fluxa never creates, holds or asks for a private key in the browser. Writes are signed by an injected EIP-1193 wallet such as MetaMask, and the SDK routes signing calls straight to that provider. The wallet must be on GenLayer Studionet; if it is not, the app asks it to switch rather than failing silently. Payment recording is an on-chain attestation by the recorded buyer - the contract does not take custody of funds.
+
+## Security
+
+* **Bounded model output.** Only the decision enum, the confidence band and the inconsistency list move state. The validator function rejects anything that is not the expected shape, and a non-verified decision must list at least one inconsistency so the merchant has something to act on.
+* **Consensus on meaning, not wording.** The validator compares the bounded fields and allows at most one item of drift in the inconsistency list. It never compares the prose reason.
+* **Untrusted evidence.** The prompt labels the evidence as hostile and forbids following instructions inside it, and the digest is persisted with the decision.
+* **Authorization in the contract.** Only the merchant can submit verification, replace evidence or withdraw a decision; only the recorded buyer can record payment; only a `VERIFIED` obligation can be paid.
+* **Validation with real limits.** Reference length, currency as a three-letter code, amount greater than zero, due date as a unix timestamp, HTTPS-only manifests, `sha256:`-prefixed digests and a hard obligation cap are enforced on chain. The frontend validates the same limits before a transaction is offered.
+* **No secrets in the bundle.** Deployment keys live in `genlayer/.secrets/`, which is gitignored, and are never imported by frontend code.
+
+### Honest limits
+
+Fluxa is a testnet prototype. Two things are worth stating plainly rather than implying otherwise.
+
+* **Verification is an assessment of evidence, not a payment.** `record_payment` writes a payment reference and sets the obligation to `PAID`. There is no value transfer between the buyer and the merchant, because this rail is out of scope for the contract: the escrow-style accounting that would move GEN is not what a buyer pays an invoice *with*. The decision, the buyer's attestation and the reference are real and on chain; the transfer itself is the piece a production deployment with a payout rail would complete.
+* **The committee can legitimately ask for more evidence.** A `MORE_EVIDENCE_REQUIRED` verdict is a first-class outcome, not a failure. A blank or unreadable evidence block is far more likely to come back that way than to come back `VERIFIED`, which is the intended behaviour.
+
+## Additional Features
+
+Beyond the core loop, Fluxa includes:
+
+* A landing page that renders from fixed marketing copy, so the product story never depends on chain availability
+* A live contract link in the landing header and footer, so the deployment is verifiable from the product itself
+* A merchant view and a buyer view over the same on-chain obligations
+* The full decision record on the detail screen: decision, confidence band, reason, inconsistency list, decision revision, evidence revision and policy version
+* A retry path that uses `replace_evidence` when the committee asks for more
+* Overdue highlighting and a due-date countdown derived from the on-chain due timestamp
+* Form validation with field-level errors, plus success, error and empty states across the UI
+* Real wallet connect and disconnect, with the connection restored on reload
+* A local SQLite projection so historical queries never re-walk chain state
+
+## What We Built for the Hackathon
+
+Fluxa goes past the boilerplate in the places that matter for an evidence product.
+
+* **A real Intelligent Contract, not a wrapper.** `FluxaObligation.py` stores the terms, runs the committee and persists the decision, its revision counters and the evidence digest entirely on chain.
+* **Non-deterministic verification under consensus.** The verdict comes from `gl.vm.run_nondet_unsafe` with an explicit validator that compares bounded fields, so the LLM decides *what to write*, while the equivalence rule decides *whether it is accepted*.
+* **Evidence digests with revisions.** Which bytes were judged is recorded, and swapping the manifest is visible as a revision bump rather than a silent overwrite.
+* **An unambiguous payment gate.** Payment recording is restricted to the buyer recorded at creation time and to obligations the committee has verified.
+* **A simple datastore, deliberately.** The projection layer is a single SQLite file via `node:sqlite`, with no hosted database and no keys to manage.
+
+### Routes
+
+| Path | Screen |
+|---|---|
+| `/` | Landing page |
+| `/invoices` | Obligations list - the workspace entry screen |
+| `/invoices/new` | Record an obligation and run verification |
+| `/invoices/:id` | Obligation detail, decision record and payment path |
+| `/docs` | How verification and consensus work |
+
+The landing page always owns `/`, so a first-time visitor meets the product story before the workspace.
+
+## Getting Started
+
+```bash
+git clone <this repo>
 cd Fluxa
+npm run install:all
+npm run dev            # frontend on http://localhost:5173
 
-cd contracts && npm install
-cd ../services && npm install
-cd ../frontend && npm install
-cd ..
+# optional: the SQLite projection API
+npm run api            # read-only API on http://localhost:8787
+npm run sync           # refresh the SQLite mirror from chain
 ```
 
-### 2. Configure server-side environment variables
-
-Copy `.env.example` to `.env` at the repository root. At minimum, the indexer
-requires:
-
-```env
-SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
-COSTON2_RPC_URL=https://coston2-api.flare.network/ext/C/rpc
-```
-
-`PRIVATE_KEY` is required only for contract deployment or reserve-funding
-scripts. Use a dedicated testnet wallet and never commit the key.
-
-### 3. Configure the frontend
-
-Copy `frontend/.env.example` to `frontend/.env.local` and provide the Supabase
-publishable key:
-
-```env
-VITE_SUPABASE_URL=https://your-project.supabase.co
-VITE_SUPABASE_ANON_KEY=your-publishable-key
-VITE_INVOICE_REGISTRY_ADDRESS=0x3cEb0760C7F2bd58B1D2A60813112CFC42E9D9e4
-VITE_SETTLEMENT_VAULT_ADDRESS=0x4fAAa888a4D220D060a1323a9831d846B055F0D2
-VITE_INVOICE_REGISTRY_V2_ADDRESS=0xa7a76084C0AD139504Ef1184f2d0A6054c019aA0
-VITE_SETTLEMENT_VAULT_V2_ADDRESS=0x7F4b2E77f0BbCA9856c620F5606a9618809eE34a
-```
-
-Only `VITE_*` variables are exposed to the browser. Never add a private key or
-Supabase service-role key to Vercel or any `VITE_*` variable.
-
-### 4. Configure Supabase
-
-Run the SQL files in `database/migrations/` in numeric order, from `0001` through
-`0007`.
-
-Deploy both Edge Functions from `supabase/functions/`:
-
-- `wallet-auth`
-- `publish-invoice`
-
-The repository's `supabase/config.toml` disables platform JWT verification for
-these functions because they perform their own request and wallet-session
-validation.
-
-### 5. Start the frontend
-
-From the repository root:
+Tests, typecheck and production build:
 
 ```bash
-npm run dev
+npm test               # 21 unit tests over money, validation and dates
+npm run typecheck      # frontend + api
+npm run build          # static bundle in frontend/dist
 ```
 
-Open `http://localhost:5173`.
-
-The equivalent package-level command is `cd frontend && npm run dev`.
-
-### 6. Synchronize chain events
+Redeploying the contract (needs the GenLayer CLI and a funded Studionet account):
 
 ```bash
-cd services
-npm run sync:once -- --network coston2
+genlayer network set studionet
+npm run deploy:contract
 ```
 
-For a long-running environment, run `npm run sync -- --network coston2` in a
-persistent worker rather than inside the Vercel frontend deployment.
+## Future Direction
 
-## Testing
+* **A settlement rail.** The decision and the buyer's attestation are already on chain; a payout path completes `record_payment` into an actual transfer.
+* **Appeals.** A merchant who disagrees with a verdict has no path today. A bonded appeal with a larger committee is the natural next step.
+* **Reputation from verdict history.** Every obligation produces a scored, reasoned, on-chain record. That is a counterparty signal waiting to be surfaced.
+* **Dispute windows.** Payment could be time-locked behind a challenge period before it is final.
+* **Multi-document evidence.** Today the merchant pastes one evidence block; a manifest could reference several documents with their own digests.
+* **Per-currency exponents.** The amount is stored in minor units with a two-decimal convention; currencies with other exponents deserve first-class support.
 
-```bash
-# Smart contracts
-cd contracts
-npm run test:offline
-npm run typecheck
+**Terms first. Evidence judged. Payment earned.**
 
-# Indexer and reducer
-cd ../services
-npm test
-npm run typecheck
+## Built On
 
-# Frontend and production build
-cd ../frontend
-npm test
-npm run typecheck
-npm run build
-```
-
-Current automated baseline:
-
-- 195 smart-contract tests
-- 23 service/indexer tests
-- 68 frontend/data-layer tests
-- Successful live Coston2 cross-asset payment and settlement verification
-
-## Vercel deployment
-
-Import the repository into Vercel and use:
-
-```text
-Root Directory: frontend
-Framework Preset: Vite
-Build Command: npm run build
-Output Directory: dist
-Node.js Version: 22.x
-```
-
-Add the six public `VITE_*` values shown above. The committed
-[`frontend/vercel.json`](frontend/vercel.json) rewrites direct routes such as
-`/invoices` and `/i/:invoiceId` to the React SPA.
+[GenLayer](https://genlayer.com) Intelligent Contracts on Studionet (chain 61999) - React 19 - Vite - Tailwind CSS v4 - `genlayer-js` 1.x - `lucide-react` - SQLite via `node:sqlite`.

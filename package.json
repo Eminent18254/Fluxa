@@ -2,13 +2,17 @@
   "name": "fluxa",
   "private": true,
   "version": "0.1.0",
-  "description": "Fluxa crypto invoicing and settlement app for Flare Coston2",
+  "description": "Fluxa - evidence-backed commercial obligations on GenLayer",
   "scripts": {
     "dev": "npm --prefix frontend run dev",
     "build": "npm --prefix frontend run build",
     "preview": "npm --prefix frontend run preview",
     "typecheck": "npm --prefix frontend run typecheck",
     "test": "npm --prefix frontend run test",
-    "test:watch": "npm --prefix frontend run test:watch"
+    "test:watch": "npm --prefix frontend run test:watch",
+    "api": "npm --prefix api run dev",
+    "sync": "npm --prefix api run sync",
+    "install:all": "npm --prefix frontend install && npm --prefix api install",
+    "deploy:contract": "genlayer deploy --contract genlayer/contracts/FluxaObligation.py"
   }
 }

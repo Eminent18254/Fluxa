@@ -3,20 +3,20 @@
  *
  * The split that matters here is not visual, it is an access boundary:
  *
- *   /                 the public landing page — the product pitch and the wallet
+ *   /                 the public landing page - the product pitch and the wallet
  *                     modal. No shell, no wallet, renders for anyone.
  *
- *   /i/:invoiceId     the payment link a merchant sends a customer. Must work for
- *                     a visitor with no wallet and no account, so it lives outside
- *                     the merchant shell. Reads through get_public_invoice(),
- *                     never the invoices table directly (see database/README.md).
+ *   /i/:obligationId  the link a merchant sends a buyer. It must work for a
+ *                     visitor with no wallet and no account, so it lives outside
+ *                     the merchant shell. It reads the obligation straight from
+ *                     the Intelligent Contract.
  *
- *   /invoices…        the merchant's own workspace, behind the AppLayout shell and
- *                     assuming a connected wallet on Coston2.
+ *   /invoices...      the merchant's own workspace, behind the AppLayout shell
+ *                     and assuming a connected wallet on GenLayer.
  *
- * There is no dashboard: the invoice list is the merchant's home. Keeping the pay
- * page outside the shell means a customer never hits a "connect your wallet" wall
- * before they know what they are being asked to pay.
+ * There is no dashboard: the obligation list is the merchant's home. Keeping the
+ * review page outside the shell means a buyer never hits a "connect your wallet"
+ * wall before they know what they are being asked to pay.
  */
 import { Routes, Route, Navigate } from 'react-router';
 import { AppLayout } from '@/components/AppLayout';
@@ -28,8 +28,9 @@ import { NotFoundPage } from '@/pages/NotFoundPage';
 import { DocsPage } from '@/pages/DocsPage';
 
 // `paths` lives in its own leaf module (@/paths) so AppLayout can read it at
-// module load without the routes.tsx ↔ AppLayout import cycle reaching it before
-// initialization. Re-exported here so existing `@/routes` imports keep working.
+// module load without the routes.tsx <-> AppLayout import cycle reaching it
+// before initialization. Re-exported here so existing `@/routes` imports keep
+// working.
 export { paths } from '@/paths';
 
 export function AppRoutes() {

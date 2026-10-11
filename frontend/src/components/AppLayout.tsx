@@ -3,7 +3,6 @@ import { Link, NavLink, Outlet } from 'react-router'
 import { Wordmark } from '@/components/landing/Brand'
 import { WalletButton } from '@/components/wallet/WalletButton'
 import { Icons, type IconName } from '@/components/icons'
-import { COSTON2 } from '@/config/flare'
 import { paths } from '@/paths'
 
 const nav: { to: string; label: string; icon: IconName; end: boolean }[] = [
@@ -60,8 +59,8 @@ export function AppLayout() {
 
       <footer className="hidden border-t border-brand-100/70 bg-white/55 backdrop-blur-xl md:block">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-8 py-5 text-xs text-night/45">
-          <span className="inline-flex items-center gap-2"><span className="size-1.5 rounded-full bg-brand-500" />Coston2 testnet</span>
-          <a href={COSTON2.explorer} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 font-medium text-brand-700 hover:text-brand-600">
+          <span className="inline-flex items-center gap-2"><span className="size-1.5 rounded-full bg-brand-500" />GenLayer testnet</span>
+          <a href="https://explorer.genlayer.com" target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 font-medium text-brand-700 hover:text-brand-600">
             Block explorer <ExternalLink className="size-3.5" />
           </a>
         </div>

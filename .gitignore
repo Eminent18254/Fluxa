@@ -5,6 +5,9 @@
 *.pem
 *.key
 secrets.json
+.deployer-*
+genlayer/.secrets/
+submission.md
 
 # ---- node ----
 node_modules/
@@ -12,22 +15,17 @@ npm-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# ---- hardhat / solidity ----
-contracts/artifacts/
-contracts/cache/
-contracts/typechain-types/
-contracts/coverage/
-contracts/coverage.json
-# Local chain records are throwaway: the chain resets and the addresses are
-# only meaningful while that node is alive. Coston2 records are committed as
-# deployment evidence.
-contracts/deployments/hardhat.json
-contracts/deployments/localhost.json
+# ---- python (Intelligent Contract) ----
+__pycache__/
+*.pyc
 
 # ---- frontend ----
 frontend/dist/
 frontend/.vite/
 frontend/coverage/
+
+# ---- local data (SQLite mirror) ----
+api/data/
 
 # ---- editors / os ----
 .DS_Store
@@ -39,7 +37,5 @@ Thumbs.db
 
 # ---- misc ----
 *.log
-services/fluxa-indexer*.log
 .cache/
-.spec-extract.txt
 .claude/

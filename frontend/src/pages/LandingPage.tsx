@@ -4,7 +4,7 @@ import {
   Features,
   ProductPreview,
   HowItWorks,
-  FlareSection,
+  GenLayerSection,
   FinalCta,
   FaqSection,
 } from '@/components/landing/Sections'
@@ -25,7 +25,7 @@ export function LandingPage() {
         <div className="landing-reveal"><Features /></div>
         <div className="landing-reveal"><ProductPreview /></div>
         <div className="landing-reveal"><HowItWorks /></div>
-        <div className="landing-reveal"><FlareSection /></div>
+        <div className="landing-reveal"><GenLayerSection /></div>
         <div className="landing-reveal"><FaqSection /></div>
         <div className="landing-reveal"><FinalCta /></div>
       </main>

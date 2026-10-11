@@ -1,10 +1,10 @@
 import { Wordmark } from './Brand'
-import { COSTON2 } from '@/config/flare'
+import { GENLAYER } from '@/config/genlayer'
 
 const COLUMNS: { title: string; links: { label: string; href: string; external?: boolean }[] }[] = [
-  { title: 'Product', links: [{ label: 'Features', href: '#product' }, { label: 'How it works', href: '#how' }, { label: 'Flare integration', href: '#flare' }, { label: 'Fluxa docs', href: '/docs' }] },
-  { title: 'Build on Flare', links: [{ label: 'Flare docs', href: 'https://dev.flare.network', external: true }, { label: 'FTSOv2', href: 'https://dev.flare.network/ftso/overview', external: true }, { label: 'Data Connector', href: 'https://dev.flare.network/fdc/overview', external: true }] },
-  { title: 'Coston2', links: [{ label: 'Block explorer', href: COSTON2.explorer, external: true }, { label: 'Testnet faucet', href: COSTON2.faucet, external: true }] },
+  { title: 'Product', links: [{ label: 'Features', href: '#product' }, { label: 'How it works', href: '#how' }, { label: 'GenLayer integration', href: '#genlayer' }, { label: 'Fluxa docs', href: '/docs' }] },
+  { title: 'Build on GenLayer', links: [{ label: 'GenLayer docs', href: 'https://docs.genlayer.com', external: true }, { label: 'Intelligent contracts', href: 'https://docs.genlayer.com/developers/intelligent-contracts/introduction', external: true }] },
+  { title: 'Testnet', links: [{ label: 'GenLayer explorer', href: GENLAYER.explorerUrl, external: true }] },
 ]
 
 export function Footer() {
@@ -16,7 +16,7 @@ export function Footer() {
         <div className="relative grid gap-12 md:grid-cols-[1.4fr_repeat(3,1fr)]">
           <div>
             <Wordmark tone="dark" markClassName="size-9" textClassName="text-xl" />
-            <p className="mt-4 max-w-xs text-sm font-medium leading-relaxed text-brand-950/70">Price invoices in USD for clarity while payments and settlements use supported FXRP or USDT0 assets, powered by live Flare FTSOv2 rates.</p>
+            <p className="mt-4 max-w-xs text-sm font-medium leading-relaxed text-brand-950/70">Verify real-world obligations from commercial evidence and coordinate payment through GenLayer intelligent contracts.</p>
           </div>
           {COLUMNS.map((column) => (
             <div key={column.title}>
@@ -29,7 +29,7 @@ export function Footer() {
         </div>
         <div className="relative mt-14 flex flex-col items-start justify-between gap-4 border-t border-brand-950/15 pt-8 text-xs font-medium text-brand-950/65 sm:flex-row sm:items-center">
           <p>© 2026 Fluxa. All rights reserved.</p>
-          <p>Live on Coston2 testnet.</p>
+          <p>Built for GenLayer Studionet.</p>
         </div>
       </div>
     </footer>

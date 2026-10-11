@@ -15,9 +15,9 @@
   --color-ink-200: #b6bcc8;
   --color-ink-50: #f5f6f8;
 
-  --color-flare-500: #e62058;
-  --color-flare-400: #ff3d72;
-  --color-flare-300: #ff6b93;
+
+
+
 
   --color-signal-500: #12b981;
   --color-signal-400: #34d399;
@@ -30,7 +30,7 @@
 
   /*
    * Marketing surface — a second design language, for the public landing page.
-   * The dark app above (ink/flare) is unchanged; these paint the "front door".
+   * The dark app above (ink tones) is unchanged; these paint the "front door".
    * Cobalt two-tone + a geometric display face, taken from the brand references.
    * Same mechanism as the app tokens: declared here, used as bg-brand-600 etc.
    */
@@ -50,7 +50,7 @@
   --color-iris-500: #6d5ef0;
   --color-iris-400: #8b7cf4;
 
-  --color-mint-500: #16c79a; /* stablecoin/settlement green on the light bands */
+  --color-mint-500: #16c79a; /* verification green on the light bands */
   --color-mint-400: #2fd6ad;
   --color-mint-600: #0f9b76; /* darker green for legible text/badges on paper */
 

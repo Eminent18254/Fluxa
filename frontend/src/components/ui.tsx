@@ -1,13 +1,12 @@
 import type { ReactNode } from 'react'
 
-type Tone = 'default' | 'success' | 'warn' | 'danger' | 'flare'
+type Tone = 'default' | 'success' | 'warn' | 'danger'
 
 const toneClasses: Record<Tone, string> = {
   default: 'border-brand-100 bg-brand-50 text-brand-700',
   success: 'border-brand-200 bg-brand-50 text-brand-700',
   warn: 'border-warn-500/25 bg-warn-500/10 text-amber-800',
   danger: 'border-danger-500/20 bg-danger-500/8 text-danger-500',
-  flare: 'border-brand-200 bg-brand-50 text-brand-700',
 }
 
 export function Badge({ tone = 'default', children }: { tone?: Tone; children: ReactNode }) {

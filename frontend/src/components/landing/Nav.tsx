@@ -5,7 +5,7 @@ import { WalletButton } from '@/components/wallet/WalletButton'
 const LINKS = [
   { href: '#product', label: 'Features' },
   { href: '#how', label: 'How Fluxa Works' },
-  { href: '#flare', label: 'Why Flare' },
+  { href: '#genlayer', label: 'Why GenLayer' },
   { href: '/docs', label: 'Docs' },
 ] as const
 
@@ -13,7 +13,7 @@ const LINKS = [
  * The landing nav. It floats transparent over the hero and fades in a blurred
  * blue bar once the page scrolls, so the wordmark never fights the hero gradient
  * but stays legible over the light sections below. The wallet control is the
- * only real action up here — everything else is an in-page anchor.
+ * only real action up here - everything else is an in-page anchor.
  */
 export function LandingNav() {
   const [scrolled, setScrolled] = useState(false)

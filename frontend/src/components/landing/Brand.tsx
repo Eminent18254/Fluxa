@@ -4,7 +4,7 @@ type Tone = 'light' | 'dark'
 
 /**
  * The Fluxa mark — a rounded tile carrying a stylised "flux" ripple: a nod to
- * flow (money moving) and to the XRP Ledger Fluxa settles against. Scales from
+ * flow: commercial value moving from a proven obligation to a settled payment.
  * the nav to the hero via `className`.
  */
 export function LogoMark({ className = 'size-9' }: { className?: string }) {

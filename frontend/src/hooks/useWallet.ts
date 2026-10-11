@@ -1,67 +1,69 @@
 /**
- * Wallet connection against Coston2.
+ * React view over the wallet store in lib/genlayer/client.
  *
- * Wraps wagmi's connect/disconnect/switch primitives into the three facts the
- * UI actually needs: are we connected, are we on the right chain, and what
- * single action fixes whichever of those is false.
+ * The store owns the connection; this only subscribes to it, so every component
+ * sees the same address and the same wrong-chain verdict.
  */
-import { useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
-  useAccount,
-  useConnect,
-  useDisconnect,
-  useSwitchChain,
-  useBalance,
-} from 'wagmi';
-import { coston2 } from '@/config/chains';
+  connect as connectWallet,
+  disconnect as disconnectWallet,
+  hasBrowserWallet,
+  restore,
+  subscribe,
+  switchToGenLayer,
+  walletState,
+  type WalletState,
+} from '@/lib/genlayer/client';
 
 export function useWallet() {
-  const { address, isConnected, chainId, status } = useAccount();
-  const { connectors, connect, isPending: isConnecting, error: connectError } =
-    useConnect();
-  const { disconnect } = useDisconnect();
-  const {
-    switchChain,
-    isPending: isSwitching,
-    error: switchError,
-  } = useSwitchChain();
+  const [state, setState] = useState<WalletState>(walletState);
+  const [error, setError] = useState<string | null>(null);
 
-  const injectedConnector =
-    connectors.find((c) => c.type === 'injected') ?? connectors[0];
-  const hasInjectedProvider =
-    typeof window !== 'undefined' &&
-    Boolean((window as Window & { ethereum?: unknown }).ethereum);
+  useEffect(() => {
+    let cancelled = false;
+    void restore();
+    const unsubscribe = subscribe((next) => {
+      if (!cancelled) setState(next);
+    });
+    return () => {
+      cancelled = true;
+      unsubscribe();
+    };
+  }, []);
 
-  // A wallet on the wrong chain is the most common demo failure — surface it
-  // as its own state rather than letting reads silently return nothing.
-  const isWrongChain = isConnected && chainId !== coston2.id;
+  const connect = useCallback(async () => {
+    setError(null);
+    try {
+      await connectWallet();
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Could not connect the wallet.');
+    }
+  }, []);
 
-  const balance = useBalance({
-    address,
-    chainId: coston2.id,
-    query: { enabled: Boolean(address) },
-  });
+  const switchChain = useCallback(async () => {
+    setError(null);
+    try {
+      await switchToGenLayer();
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Could not switch networks.');
+    }
+  }, []);
 
-  const handleConnect = useCallback(() => {
-    if (!injectedConnector) return;
-    connect({ connector: injectedConnector, chainId: coston2.id });
-  }, [connect, injectedConnector]);
-
-  const handleSwitch = useCallback(() => {
-    switchChain({ chainId: coston2.id });
-  }, [switchChain]);
+  const disconnect = useCallback(() => {
+    setError(null);
+    disconnectWallet();
+  }, []);
 
   return {
-    address,
-    isConnected,
-    isConnecting: isConnecting || status === 'connecting' || status === 'reconnecting',
-    isWrongChain,
-    isSwitching,
-    hasWallet: Boolean(injectedConnector && hasInjectedProvider),
-    nativeBalance: balance.data,
-    connect: handleConnect,
+    address: state.address,
+    isConnected: Boolean(state.address),
+    isConnecting: state.isConnecting,
+    isWrongChain: state.isWrongChain,
+    hasWallet: hasBrowserWallet(),
+    connect,
     disconnect,
-    switchToCoston2: handleSwitch,
-    error: connectError ?? switchError ?? null,
+    switchChain,
+    error,
   };
 }

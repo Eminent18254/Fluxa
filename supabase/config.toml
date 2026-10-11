@@ -1,8 +1,0 @@
-[functions.wallet-auth]
-verify_jwt = false
-
-[functions.publish-invoice]
-verify_jwt = false
-
-[functions.confirm-settlement]
-verify_jwt = false

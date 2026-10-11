@@ -2,27 +2,19 @@
 
 /**
  * The environment variables this app reads, declared so they are typed as
- * `string | undefined` instead of `any`.
+ * `string | undefined` instead of `any`. Vite's own `ImportMetaEnv` carries an
+ * index signature, so a typo in a variable name would type-check silently and
+ * arrive as `undefined` at runtime.
  *
- * Vite's own `ImportMetaEnv` carries an index signature, so a typo in a variable
- * name type-checks silently and arrives as `undefined` at runtime. Naming them
- * here turns that into a compile error.
- *
- * Only `VITE_`-prefixed variables are exposed to the client. That prefix is the
- * mechanism keeping `SUPABASE_SERVICE_ROLE_KEY` out of the bundle: Vite will not
- * inline a variable without it, so the indexer's key cannot be reached from here
- * even by accident.
+ * There are no secrets here. The only server-side value Fluxa has is the
+ * GenLayer deployer key, which stays in the terminal that deploys the contract
+ * and is never exposed to the bundle.
  */
 interface ImportMetaEnv {
-  readonly VITE_SUPABASE_URL?: string;
-  /** The anon / publishable key. Never the service-role key — see lib/supabase.ts. */
-  readonly VITE_SUPABASE_ANON_KEY?: string;
-  readonly VITE_COSTON2_RPC_URL?: string;
-  readonly VITE_INVOICE_REGISTRY_ADDRESS?: string;
-  readonly VITE_SETTLEMENT_VAULT_ADDRESS?: string;
-  readonly VITE_INVOICE_REGISTRY_V2_ADDRESS?: string;
-  readonly VITE_SETTLEMENT_VAULT_V2_ADDRESS?: string;
-  readonly VITE_FDC_PAYMENT_RAIL_ADDRESS?: string;
+  /** The deployed FluxaObligation address on GenLayer Studionet. */
+  readonly VITE_GENLAYER_OBLIGATION_CONTRACT?: string;
+  /** Base URL of the optional SQLite projection API. */
+  readonly VITE_FLUXA_API_URL?: string;
 }
 
 interface ImportMeta {
