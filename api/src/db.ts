@@ -12,8 +12,16 @@
 import { DatabaseSync } from 'node:sqlite'
 import { mkdirSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
-const path = resolve(process.env.FLUXA_DB_PATH ?? 'api/data/fluxa.sqlite')
+// Resolve locations from this file, not from process.cwd(). `npm run sync` runs
+// with the api/ directory as cwd, so a cwd-relative default wrote the mirror to
+// api/api/data/ instead of api/data/. A relative FLUXA_DB_PATH is interpreted
+// against the repository root, which is how .env documents it.
+const apiRoot = fileURLToPath(new URL('..', import.meta.url))
+const repoRoot = resolve(apiRoot, '..')
+const configured = process.env.FLUXA_DB_PATH?.trim()
+const path = configured ? resolve(repoRoot, configured) : resolve(apiRoot, 'data', 'fluxa.sqlite')
 mkdirSync(dirname(path), { recursive: true })
 
 export const db = new DatabaseSync(path)
