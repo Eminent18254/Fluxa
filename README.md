@@ -17,16 +17,16 @@ Fluxa runs on **GenLayer Studionet** with test funds only.
 
 ## Deployed Contract
 
-| | |
-|---|---|
-| **Contract address** | `0x9eBE9664a68faA688FB95F058c30763a25846b79` |
-| **Explorer link** | https://explorer-studio.genlayer.com/address/0x9eBE9664a68faA688FB95F058c30763a25846b79 |
-| Network | GenLayer Studionet, chain 61999 |
-| RPC | `https://studio.genlayer.com/api` |
-| Deploy transaction | https://explorer-studio.genlayer.com/tx/0x39bfe57733ac374cbf0285fcbc8241348b4af990cdece8a0d0ed2c44b67328a0 |
-| Source | `genlayer/contracts/FluxaObligation.py` |
-| Runtime | `py-genlayer:1jb45aa8ynh2a9c9xn3b7qqh8sm5q93hwfp7jqmwsfhh8jpz09h6` |
-| Redeploy | `npm run deploy:contract` |
+|                      |                                                                                                            |
+| -------------------- | ---------------------------------------------------------------------------------------------------------- |
+| **Contract address** | `0x9eBE9664a68faA688FB95F058c30763a25846b79`                                                               |
+| **Explorer link**    | https://explorer-studio.genlayer.com/address/0x9eBE9664a68faA688FB95F058c30763a25846b79                    |
+| Network              | GenLayer Studionet, chain 61999                                                                            |
+| RPC                  | `https://studio.genlayer.com/api`                                                                          |
+| Deploy transaction   | https://explorer-studio.genlayer.com/tx/0x39bfe57733ac374cbf0285fcbc8241348b4af990cdece8a0d0ed2c44b67328a0 |
+| Source               | `genlayer/contracts/FluxaObligation.py`                                                                    |
+| Runtime              | `py-genlayer:1jb45aa8ynh2a9c9xn3b7qqh8sm5q93hwfp7jqmwsfhh8jpz09h6`                                         |
+| Redeploy             | `npm run deploy:contract`                                                                                  |
 
 > **Direct link:** https://explorer-studio.genlayer.com/address/0x9eBE9664a68faA688FB95F058c30763a25846b79
 
@@ -38,10 +38,10 @@ genlayer call 0x9eBE9664a68faA688FB95F058c30763a25846b79 get_state
 
 ## Live Deployment
 
-| | |
-|---|---|
-| **Repository** | https://github.com/REPLACE-WITH-YOUR-GITHUB-REPO |
-| App contract | `0x9eBE9664a68faA688FB95F058c30763a25846b79` (Studionet 61999) |
+|                |                                                                |
+| -------------- | -------------------------------------------------------------- |
+| **Repository** | https://github.com/REPLACE-WITH-YOUR-GITHUB-REPO               |
+| App contract   | `0x9eBE9664a68faA688FB95F058c30763a25846b79` (Studionet 61999) |
 
 The deployment is the static bundle produced by `npm run build`. `frontend/vercel.json` supplies the SPA rewrites, so a hard refresh on any route resolves to the bundle. The only runtime configuration the bundle needs is the contract address, and that address is compiled in, so a host with no environment variables still boots against the live deployment.
 
@@ -55,29 +55,15 @@ The deployment is the static bundle produced by `npm run build`. `frontend/verce
 
 Statuses are the contract's own bounded enum - `SUBMITTED`, `VERIFIED`, `REJECTED`, `MORE_EVIDENCE_REQUIRED`, `PAID` - and the UI shows them verbatim. A screen that said "open" when the contract says `MORE_EVIDENCE_REQUIRED` would be lying about the one thing the merchant has to act on.
 
-## What Makes Fluxa Different
-
-### 1. The judge is not the payer
-
-The merchant benefits from a `VERIFIED` decision, so the merchant cannot be the only opinion on whether the evidence is real. The verdict comes from a validator committee. The committee's fields are published so anyone can inspect what was decided and why.
-
-### 2. Free-form model output never controls state
-
-Consensus compares a bounded decision enum, a bounded confidence band and a bounded inconsistency list. Prose reasons are stored but not compared, because two correct runs of a model will never phrase a paragraph identically. Anything the model returns outside the supported set is rejected before it can reach state.
-
-### 3. Evidence is treated as hostile
-
-The prompt tells the committee explicitly that the evidence is untrusted content and that instructions inside it must never be followed. The digest the merchant declared is stored next to every decision, so a later reader can tell which bytes were judged without re-reading them - and a replaced manifest is visible as a revision bump rather than a silent swap.
-
 ## The User Journey
 
-| Path | Screen |
-|---|---|
-| `/` | Landing page |
-| `/invoices` | Obligations the connected wallet can see - created or payable |
-| `/invoices/new` | Record an obligation and run verification |
-| `/invoices/:id` | Obligation detail, decision record and the payment path |
-| `/docs` | How the verification model works |
+| Path            | Screen                                                        |
+| --------------- | ------------------------------------------------------------- |
+| `/`             | Landing page                                                  |
+| `/invoices`     | Obligations the connected wallet can see - created or payable |
+| `/invoices/new` | Record an obligation and run verification                     |
+| `/invoices/:id` | Obligation detail, decision record and the payment path       |
+| `/docs`         | How the verification model works                              |
 
 A first-time visitor meets the product story at `/`. Connecting a wallet with no obligations yet shows an empty state rather than a broken list.
 
@@ -108,17 +94,17 @@ api/
 
 ### Contract surface
 
-| Method | Kind | Purpose |
-|---|---|---|
-| `create_obligation` | write | Record the terms; caller becomes the merchant |
-| `submit_verification` | write | Run the committee over the evidence |
-| `replace_evidence` | write | Swap the manifest while more evidence is requested |
-| `record_payment` | write | The recorded buyer marks a verified obligation paid |
-| `get_state` | view | Obligations, policy version and count in one call |
-| `get_obligation` | view | One obligation by id |
-| `get_obligations` | view | Every obligation, newest first |
-| `get_my_obligations` | view | Obligations where an address is the merchant |
-| `get_payable_obligations` | view | Obligations where an address is the buyer |
+| Method                    | Kind  | Purpose                                             |
+| ------------------------- | ----- | --------------------------------------------------- |
+| `create_obligation`       | write | Record the terms; caller becomes the merchant       |
+| `submit_verification`     | write | Run the committee over the evidence                 |
+| `replace_evidence`        | write | Swap the manifest while more evidence is requested  |
+| `record_payment`          | write | The recorded buyer marks a verified obligation paid |
+| `get_state`               | view  | Obligations, policy version and count in one call   |
+| `get_obligation`          | view  | One obligation by id                                |
+| `get_obligations`         | view  | Every obligation, newest first                      |
+| `get_my_obligations`      | view  | Obligations where an address is the merchant        |
+| `get_payable_obligations` | view  | Obligations where an address is the buyer           |
 
 ## Non-Custodial by Design
 
@@ -126,53 +112,36 @@ Fluxa never creates, holds or asks for a private key in the browser. Writes are 
 
 ## Security
 
-* **Bounded model output.** Only the decision enum, the confidence band and the inconsistency list move state. The validator function rejects anything that is not the expected shape, and a non-verified decision must list at least one inconsistency so the merchant has something to act on.
-* **Consensus on meaning, not wording.** The validator compares the bounded fields and allows at most one item of drift in the inconsistency list. It never compares the prose reason.
-* **Untrusted evidence.** The prompt labels the evidence as hostile and forbids following instructions inside it, and the digest is persisted with the decision.
-* **Authorization in the contract.** Only the merchant can submit verification, replace evidence or withdraw a decision; only the recorded buyer can record payment; only a `VERIFIED` obligation can be paid.
-* **Validation with real limits.** Reference length, currency as a three-letter code, amount greater than zero, due date as a unix timestamp, HTTPS-only manifests, `sha256:`-prefixed digests and a hard obligation cap are enforced on chain. The frontend validates the same limits before a transaction is offered.
-* **No secrets in the bundle.** Deployment keys live in `genlayer/.secrets/`, which is gitignored, and are never imported by frontend code.
-
-### Honest limits
-
-Fluxa is a testnet prototype. Two things are worth stating plainly rather than implying otherwise.
-
-* **Verification is an assessment of evidence, not a payment.** `record_payment` writes a payment reference and sets the obligation to `PAID`. There is no value transfer between the buyer and the merchant, because this rail is out of scope for the contract: the escrow-style accounting that would move GEN is not what a buyer pays an invoice *with*. The decision, the buyer's attestation and the reference are real and on chain; the transfer itself is the piece a production deployment with a payout rail would complete.
-* **The committee can legitimately ask for more evidence.** A `MORE_EVIDENCE_REQUIRED` verdict is a first-class outcome, not a failure. A blank or unreadable evidence block is far more likely to come back that way than to come back `VERIFIED`, which is the intended behaviour.
+- **Bounded model output.** Only the decision enum, the confidence band and the inconsistency list move state. The validator function rejects anything that is not the expected shape, and a non-verified decision must list at least one inconsistency so the merchant has something to act on.
+- **Consensus on meaning, not wording.** The validator compares the bounded fields and allows at most one item of drift in the inconsistency list. It never compares the prose reason.
+- **Untrusted evidence.** The prompt labels the evidence as hostile and forbids following instructions inside it, and the digest is persisted with the decision.
+- **Authorization in the contract.** Only the merchant can submit verification, replace evidence or withdraw a decision; only the recorded buyer can record payment; only a `VERIFIED` obligation can be paid.
+- **Validation with real limits.** Reference length, currency as a three-letter code, amount greater than zero, due date as a unix timestamp, HTTPS-only manifests, `sha256:`-prefixed digests and a hard obligation cap are enforced on chain. The frontend validates the same limits before a transaction is offered.
+- **No secrets in the bundle.** Deployment keys live in `genlayer/.secrets/`, which is gitignored, and are never imported by frontend code.
 
 ## Additional Features
 
 Beyond the core loop, Fluxa includes:
 
-* A landing page that renders from fixed marketing copy, so the product story never depends on chain availability
-* A live contract link in the landing header and footer, so the deployment is verifiable from the product itself
-* A merchant view and a buyer view over the same on-chain obligations
-* The full decision record on the detail screen: decision, confidence band, reason, inconsistency list, decision revision, evidence revision and policy version
-* A retry path that uses `replace_evidence` when the committee asks for more
-* Overdue highlighting and a due-date countdown derived from the on-chain due timestamp
-* Form validation with field-level errors, plus success, error and empty states across the UI
-* Real wallet connect and disconnect, with the connection restored on reload
-* A local SQLite projection so historical queries never re-walk chain state
-
-## What We Built for the Hackathon
-
-Fluxa goes past the boilerplate in the places that matter for an evidence product.
-
-* **A real Intelligent Contract, not a wrapper.** `FluxaObligation.py` stores the terms, runs the committee and persists the decision, its revision counters and the evidence digest entirely on chain.
-* **Non-deterministic verification under consensus.** The verdict comes from `gl.vm.run_nondet_unsafe` with an explicit validator that compares bounded fields, so the LLM decides *what to write*, while the equivalence rule decides *whether it is accepted*.
-* **Evidence digests with revisions.** Which bytes were judged is recorded, and swapping the manifest is visible as a revision bump rather than a silent overwrite.
-* **An unambiguous payment gate.** Payment recording is restricted to the buyer recorded at creation time and to obligations the committee has verified.
-* **A simple datastore, deliberately.** The projection layer is a single SQLite file via `node:sqlite`, with no hosted database and no keys to manage.
+- A landing page that renders from fixed marketing copy, so the product story never depends on chain availability
+- A live contract link in the landing header and footer, so the deployment is verifiable from the product itself
+- A merchant view and a buyer view over the same on-chain obligations
+- The full decision record on the detail screen: decision, confidence band, reason, inconsistency list, decision revision, evidence revision and policy version
+- A retry path that uses `replace_evidence` when the committee asks for more
+- Overdue highlighting and a due-date countdown derived from the on-chain due timestamp
+- Form validation with field-level errors, plus success, error and empty states across the UI
+- Real wallet connect and disconnect, with the connection restored on reload
+- A local SQLite projection so historical queries never re-walk chain state
 
 ### Routes
 
-| Path | Screen |
-|---|---|
-| `/` | Landing page |
-| `/invoices` | Obligations list - the workspace entry screen |
-| `/invoices/new` | Record an obligation and run verification |
+| Path            | Screen                                              |
+| --------------- | --------------------------------------------------- |
+| `/`             | Landing page                                        |
+| `/invoices`     | Obligations list - the workspace entry screen       |
+| `/invoices/new` | Record an obligation and run verification           |
 | `/invoices/:id` | Obligation detail, decision record and payment path |
-| `/docs` | How verification and consensus work |
+| `/docs`         | How verification and consensus work                 |
 
 The landing page always owns `/`, so a first-time visitor meets the product story before the workspace.
 
@@ -206,12 +175,12 @@ npm run deploy:contract
 
 ## Future Direction
 
-* **A settlement rail.** The decision and the buyer's attestation are already on chain; a payout path completes `record_payment` into an actual transfer.
-* **Appeals.** A merchant who disagrees with a verdict has no path today. A bonded appeal with a larger committee is the natural next step.
-* **Reputation from verdict history.** Every obligation produces a scored, reasoned, on-chain record. That is a counterparty signal waiting to be surfaced.
-* **Dispute windows.** Payment could be time-locked behind a challenge period before it is final.
-* **Multi-document evidence.** Today the merchant pastes one evidence block; a manifest could reference several documents with their own digests.
-* **Per-currency exponents.** The amount is stored in minor units with a two-decimal convention; currencies with other exponents deserve first-class support.
+- **A settlement rail.** The decision and the buyer's attestation are already on chain; a payout path completes `record_payment` into an actual transfer.
+- **Appeals.** A merchant who disagrees with a verdict has no path today. A bonded appeal with a larger committee is the natural next step.
+- **Reputation from verdict history.** Every obligation produces a scored, reasoned, on-chain record. That is a counterparty signal waiting to be surfaced.
+- **Dispute windows.** Payment could be time-locked behind a challenge period before it is final.
+- **Multi-document evidence.** Today the merchant pastes one evidence block; a manifest could reference several documents with their own digests.
+- **Per-currency exponents.** The amount is stored in minor units with a two-decimal convention; currencies with other exponents deserve first-class support.
 
 **Terms first. Evidence judged. Payment earned.**
 
