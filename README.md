@@ -38,10 +38,9 @@ genlayer call 0x9eBE9664a68faA688FB95F058c30763a25846b79 get_state
 
 ## Live Deployment
 
-|                |                                                                |
-| -------------- | -------------------------------------------------------------- |
-| **Repository** | https://github.com/REPLACE-WITH-YOUR-GITHUB-REPO               |
-| App contract   | `0x9eBE9664a68faA688FB95F058c30763a25846b79` (Studionet 61999) |
+|              |                                                                |
+| ------------ | -------------------------------------------------------------- |
+| App contract | `0x9eBE9664a68faA688FB95F058c30763a25846b79` (Studionet 61999) |
 
 The deployment is the static bundle produced by `npm run build`. `frontend/vercel.json` supplies the SPA rewrites, so a hard refresh on any route resolves to the bundle. The only runtime configuration the bundle needs is the contract address, and that address is compiled in, so a host with no environment variables still boots against the live deployment.
 
