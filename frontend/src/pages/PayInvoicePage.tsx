@@ -8,12 +8,13 @@ import { Wordmark } from '@/components/landing/Brand'
 import { WalletButton } from '@/components/wallet/WalletButton'
 import { useWalletModal } from '@/components/wallet/WalletModalProvider'
 import { useWallet } from '@/hooks/useWallet'
-import { fetchObligation, recordPayment, replaceEvidence, submitVerification } from '@/lib/genlayer/client'
+import { fetchObligation, recordPayment, replaceEvidence, submitVerificationAndConfirm } from '@/lib/genlayer/client'
 import {
   formatDueDate,
   formatMinorUnits,
   isOverdue,
-  MAX_EVIDENCE_CHARS,
+  MAX_EVIDENCE_REVISIONS,
+  reviewState,
   type Obligation,
 } from '@/lib/obligations'
 import { shortenAddress } from '@/lib/format'
@@ -256,17 +257,16 @@ function MerchantPanel({
 }) {
   const { isConnected } = useWallet()
   const { open } = useWalletModal()
-  const [evidence, setEvidence] = useState('')
   const [uri, setUri] = useState(obligation.evidenceUri)
   const [digest, setDigest] = useState(obligation.evidenceDigest)
+  const [replacing, setReplacing] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
 
-  const canVerify = obligation.status === 'SUBMITTED' || obligation.status === 'MORE_EVIDENCE_REQUIRED'
-  const needsEvidence = obligation.status === 'MORE_EVIDENCE_REQUIRED'
+  const { canVerify, canReplace, judged: alreadyJudged } = reviewState(obligation)
 
-  async function run() {
+  async function verify() {
     if (!isConnected) {
       open()
       return
@@ -275,20 +275,35 @@ function MerchantPanel({
       setError('Only the merchant who created this obligation can run verification.')
       return
     }
-    if (!evidence.trim()) {
-      setError('Paste the evidence the committee should read.')
+    try {
+      setBusy(true)
+      setError(null)
+      await submitVerificationAndConfirm(obligation.id)
+      await onChanged()
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Verification could not be completed.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function replace() {
+    if (!isConnected) {
+      open()
+      return
+    }
+    if (!isMerchant) {
+      setError('Only the merchant who created this obligation can replace its evidence.')
       return
     }
     try {
       setBusy(true)
       setError(null)
-      if (needsEvidence && (uri.trim() !== obligation.evidenceUri || digest.trim() !== obligation.evidenceDigest)) {
-        await replaceEvidence(obligation.id, uri.trim(), digest.trim())
-      }
-      await submitVerification(obligation.id, evidence.trim())
+      await replaceEvidence(obligation.id, uri.trim(), digest.trim().toLowerCase())
+      setReplacing(false)
       await onChanged()
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Verification could not be completed.')
+      setError(cause instanceof Error ? cause.message : 'The evidence revision could not be committed.')
     } finally {
       setBusy(false)
     }
@@ -312,50 +327,80 @@ function MerchantPanel({
 
       {obligation.status === 'PAID' ? (
         <p className="mt-3 text-sm text-night/60">This obligation is paid. No further action is available.</p>
-      ) : canVerify ? (
+      ) : obligation.status === 'VERIFIED' ? (
+        <p className="mt-3 text-sm leading-relaxed text-night/60">
+          This revision is verified. A verified decision is final, so there is nothing left to run - the recorded buyer can
+          attach a payment reference.
+        </p>
+      ) : (
         <>
           <p className="mt-3 text-sm leading-relaxed text-night/60">
-            {needsEvidence
-              ? 'The committee asked for more evidence. Update the manifest if the files changed, then run verification again.'
-              : 'Hand the recorded evidence to the validator committee.'}
+            Evidence revision {obligation.evidenceRevision} of {MAX_EVIDENCE_REVISIONS}{' '}
+            {alreadyJudged
+              ? `was judged ${obligation.decision}. Commit a new revision to ask for another review.`
+              : 'has not been judged yet.'}
           </p>
 
-          {needsEvidence && (
-            <div className="mt-4 space-y-3">
-              <input value={uri} onChange={(event) => setUri(event.target.value)} className="app-input px-3.5 py-2.5" placeholder="https://..." />
-              <input
-                value={digest}
-                onChange={(event) => setDigest(event.target.value)}
-                className="app-input px-3.5 py-2.5 font-mono text-xs"
-                placeholder="sha256:..."
-              />
-            </div>
+          {canVerify && (
+            <Button className="mt-4 w-full" size="lg" onClick={verify} disabled={busy}>
+              {busy ? (
+                <>
+                  <Spinner className="size-4" />
+                  Committee reviewing
+                </>
+              ) : (
+                'Run verification'
+              )}
+            </Button>
           )}
 
-          <textarea
-            rows={6}
-            value={evidence}
-            maxLength={MAX_EVIDENCE_CHARS}
-            onChange={(event) => setEvidence(event.target.value)}
-            className="app-input mt-4 resize-y px-3.5 py-2.5 font-mono text-xs leading-relaxed"
-            placeholder="Paste the evidence for the committee."
-          />
-          <Button className="mt-4 w-full" size="lg" onClick={run} disabled={busy}>
-            {busy ? (
-              <>
-                <Spinner className="size-4" />
-                Committee reviewing
-              </>
+          {canReplace &&
+            (replacing ? (
+              <div className="mt-4 space-y-3">
+                <input
+                  value={uri}
+                  onChange={(event) => setUri(event.target.value)}
+                  className="app-input px-3.5 py-2.5"
+                  placeholder="https://..."
+                />
+                <input
+                  value={digest}
+                  onChange={(event) => setDigest(event.target.value)}
+                  className="app-input px-3.5 py-2.5 font-mono text-xs"
+                  placeholder="sha256:<64 hex characters>"
+                />
+                <div className="flex gap-3">
+                  <Button className="flex-1" onClick={replace} disabled={busy}>
+                    {busy ? (
+                      <>
+                        <Spinner className="size-4" />
+                        Committing
+                      </>
+                    ) : (
+                      'Commit revision'
+                    )}
+                  </Button>
+                  <Button variant="secondary" onClick={() => setReplacing(false)} disabled={busy}>
+                    Cancel
+                  </Button>
+                </div>
+                <p className="text-xs leading-relaxed text-night/50">
+                  The digest must be the SHA-256 of the file that URL serves. The committee refuses to judge anything that
+                  does not match it.
+                </p>
+              </div>
             ) : (
-              'Run verification'
-            )}
-          </Button>
+              <Button variant="secondary" className="mt-3 w-full" size="lg" onClick={() => setReplacing(true)} disabled={busy}>
+                Replace evidence
+              </Button>
+            ))}
+
+          {!canVerify && !canReplace && (
+            <p className="mt-3 text-sm leading-relaxed text-night/60">
+              All {MAX_EVIDENCE_REVISIONS} evidence revisions have been used, so no further review is possible.
+            </p>
+          )}
         </>
-      ) : (
-        <p className="mt-3 text-sm leading-relaxed text-night/60">
-          The committee has already returned {obligation.decision}. A new decision needs a fresh review, which is not
-          available at this revision.
-        </p>
       )}
 
       {error && <p className="app-error mt-3 p-3 text-xs">{error}</p>}

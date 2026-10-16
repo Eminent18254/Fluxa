@@ -17,7 +17,7 @@ import { studionet } from 'genlayer-js/chains';
 export const GENLAYER_CHAIN = studionet;
 
 /** The FluxaObligation deployment. Public, so it can live in source. */
-const DEPLOYED_CONTRACT = '0x9eBE9664a68faA688FB95F058c30763a25846b79';
+const DEPLOYED_CONTRACT = '0x4Cb20B9dD428F2B14bf4d256a1342a4cC39a5cEE';
 
 /** The SDK's placeholder explorer URL is not the Studionet explorer. */
 const EXPLORER_URL = 'https://explorer-studio.genlayer.com';

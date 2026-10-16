@@ -4,7 +4,7 @@ import { ReceiptText } from 'lucide-react'
 import { Button, Spinner } from '@/components/Button'
 import { useWalletModal } from '@/components/wallet/WalletModalProvider'
 import { useWallet } from '@/hooks/useWallet'
-import { createObligation, fetchObligations, submitVerification } from '@/lib/genlayer/client'
+import { createObligation, fetchObligations, submitVerificationAndConfirm } from '@/lib/genlayer/client'
 import {
   defaultDueDate,
   formatMinorUnits,
@@ -26,8 +26,9 @@ type Stage = 'idle' | 'recording' | 'verifying'
  * pretending it is one.
  *
  *   1. `create_obligation` writes the commercial terms. Fast, deterministic.
- *   2. `submit_verification` hands the evidence to the validator committee.
- *      Slow, and it can legitimately come back as more-evidence-required.
+ *   2. `submit_verification` makes the validator committee fetch the manifest
+ *      this obligation points at and rule on it. Slow, and it can legitimately
+ *      come back as more-evidence-required.
  *
  * Splitting them means a merchant never waits on a committee to find out whether
  * their terms were even accepted.
@@ -44,7 +45,6 @@ export function NewInvoicePage() {
     dueDate: defaultDueDate(),
     evidenceUri: '',
     evidenceDigest: '',
-    evidence: '',
   })
   const [errors, setErrors] = useState<DraftErrors>({})
   const [stage, setStage] = useState<Stage>('idle')
@@ -95,7 +95,7 @@ export function NewInvoicePage() {
       setCreated(match)
 
       setStage('verifying')
-      await submitVerification(match.id, form.evidence.trim())
+      await submitVerificationAndConfirm(match.id)
 
       const [fresh] = await Promise.all([fetchObligations().then((rows) => rows.find((row) => row.id === match.id))])
       if (fresh) setCreated(fresh)
@@ -113,8 +113,8 @@ export function NewInvoicePage() {
         <ReceiptText className="mx-auto size-10 text-brand-600" />
         <h1 className="mt-5 font-display text-3xl font-semibold">Obligation recorded</h1>
         <p className="mt-3 text-night/55">
-          The validator committee reviewed the evidence. The decision is now on chain and cannot be changed without another
-          review.
+          The committee fetched the manifest, checked it against the recorded digest, and wrote its decision on chain.
+          Changing that decision needs a new evidence revision.
         </p>
         <div className="mt-6 rounded-2xl border border-brand-100 bg-white p-5 text-left">
           <Row label="Reference">{created.externalId}</Row>
@@ -205,23 +205,14 @@ export function NewInvoicePage() {
             value={form.evidenceDigest}
             onChange={(event) => update('evidenceDigest', event.target.value)}
             className={inputClass}
-            placeholder="sha256:..."
-          />
-        </Field>
-
-        <Field label="Evidence for the committee" error={errors.evidence}>
-          <textarea
-            rows={8}
-            value={form.evidence}
-            onChange={(event) => update('evidence', event.target.value)}
-            className={`${inputClass} resize-y font-mono text-xs leading-relaxed`}
-            placeholder="Paste the invoice, purchase order and delivery receipt text. The committee compares these against the terms above."
+            placeholder="sha256:<64 hex characters>"
           />
         </Field>
 
         <p className="rounded-xl bg-brand-50 p-3 text-xs leading-relaxed text-night/60">
-          The digest is recorded with the decision so it stays visible which evidence was judged. Treat anything inside the
-          evidence as untrusted: the committee is told to ignore instructions it contains.
+          The committee fetches this URL itself and refuses to rule unless the bytes it downloads hash to the digest above,
+          so the manifest has to be public and stable. Whatever it contains is treated as untrusted content, never as
+          instructions.
         </p>
 
         {failure && <p className="app-error p-3 text-sm">{failure}</p>}

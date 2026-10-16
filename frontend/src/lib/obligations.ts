@@ -42,6 +42,9 @@ export type Obligation = {
   policyVersion: string;
   decisionRevision: number;
   evidenceRevision: number;
+  evaluatedRevision: number;
+  contentDigest: string;
+  verdictIsCurrent: boolean;
   paymentReference: string;
 };
 
@@ -53,15 +56,17 @@ export type ObligationDraft = {
   dueDate: string;
   evidenceUri: string;
   evidenceDigest: string;
-  evidence: string;
 };
 
 export type DraftErrors = Partial<Record<keyof ObligationDraft, string>>;
 
 export const MAX_EXTERNAL_ID_CHARS = 120;
-export const MAX_EVIDENCE_CHARS = 20000;
+/** Mirrors the contract: a new review needs a new revision, and revisions stop here. */
+export const MAX_EVIDENCE_REVISIONS = 3;
 
 const ADDRESS_PATTERN = /^0x[0-9a-fA-F]{40}$/;
+/** A digest is only usable if it pins a whole SHA-256, matching the contract. */
+const DIGEST_PATTERN = /^sha256:[0-9a-fA-F]{64}$/;
 
 /** `1234.56` -> `"123456"` for a 2-decimal currency, rounding half up. */
 export function toMinorUnits(value: string, exponent = 2): string {
@@ -154,16 +159,40 @@ export function validateDraft(draft: ObligationDraft): DraftErrors {
   else if (!uri.startsWith('https://')) errors.evidenceUri = 'The manifest must be an HTTPS URL.'
 
   const digest = draft.evidenceDigest.trim()
-  if (!digest) errors.evidenceDigest = 'Add the SHA-256 digest of the evidence.'
-  else if (!digest.startsWith('sha256:')) errors.evidenceDigest = 'The digest must start with sha256:.'
-
-  const evidence = draft.evidence.trim()
-  if (!evidence) errors.evidence = 'Paste the evidence the committee should read.'
-  else if (evidence.length > MAX_EVIDENCE_CHARS) errors.evidence = `Keep the evidence under ${MAX_EVIDENCE_CHARS} characters.`
+  if (!digest) errors.evidenceDigest = 'Add the SHA-256 digest of the evidence file.'
+  else if (!DIGEST_PATTERN.test(digest)) {
+    errors.evidenceDigest = 'Use sha256: followed by the 64 hex characters of the file digest.'
+  }
 
   return errors
 }
 
 export function hasErrors(errors: DraftErrors): boolean {
   return Object.keys(errors).length > 0
+}
+
+/** The statuses whose evidence the contract will still consider. */
+const REVIEWABLE_STATUSES: readonly ObligationStatus[] = ['SUBMITTED', 'REJECTED', 'MORE_EVIDENCE_REQUIRED']
+
+/**
+ * What the merchant may still do with this obligation's evidence.
+ *
+ * The contract judges each evidence revision once, refuses to reconsider a
+ * verified obligation, and caps how many revisions exist. The workspace has to
+ * read state the same way, otherwise it offers a button whose only possible
+ * outcome is a revert.
+ */
+export function reviewState(obligation: Obligation): {
+  /** A verdict already exists for the evidence revision currently attached. */
+  judged: boolean
+  canVerify: boolean
+  canReplace: boolean
+} {
+  const judged = obligation.evaluatedRevision === obligation.evidenceRevision
+  const reviewable = REVIEWABLE_STATUSES.includes(obligation.status)
+  return {
+    judged,
+    canVerify: reviewable && !judged,
+    canReplace: reviewable && obligation.evidenceRevision < MAX_EVIDENCE_REVISIONS,
+  }
 }

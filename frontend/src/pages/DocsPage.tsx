@@ -6,8 +6,8 @@ import { paths } from '@/paths'
 
 const steps = [
   ['01', 'Record the terms', 'The merchant writes the reference, amount, currency, buyer wallet and due date. These are the commercial terms and they are stored on chain.'],
-  ['02', 'Attach the evidence', 'An HTTPS manifest URL and a SHA-256 digest are recorded with the obligation, so it always stays visible which evidence was judged.'],
-  ['03', 'Validators decide', 'The committee reads the evidence against the terms and must agree on a bounded decision before anything is written.'],
+  ['02', 'Attach the evidence', 'An HTTPS manifest URL and the SHA-256 digest of the file are recorded on chain with the terms, so the exact bytes under review are fixed before anyone reads them.'],
+  ['03', 'Validators decide', 'The committee fetches that URL itself and refuses to proceed unless the bytes hash to the recorded digest, then rules and must agree on a bounded decision.'],
   ['04', 'Payment unlocks', 'Only a VERIFIED obligation can take a payment reference, and only from the buyer recorded on it.'],
 ]
 
@@ -63,8 +63,8 @@ export function DocsPage() {
             items={[
               'Connect the wallet that will own the obligation.',
               'Record the terms, then attach the evidence manifest URL and its SHA-256 digest.',
-              'Paste the evidence text the committee should read, then run verification.',
-              'If the decision asks for more evidence, update the manifest and run it again.',
+              'Run verification. The committee downloads the manifest and checks it against the digest on record before reading anything.',
+              'If it asks for more evidence, commit a new evidence revision and run it again. Revisions are capped, so a rejected result cannot be rerun unchanged.',
               'Share the obligation link with the buyer and track the state from the workspace.',
             ]}
           />

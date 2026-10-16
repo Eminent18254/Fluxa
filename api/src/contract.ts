@@ -14,7 +14,7 @@ import { studionet } from 'genlayer-js/chains'
 import type { ContractObligation } from './db.js'
 
 const ADDRESS_PATTERN = /^0x[0-9a-fA-F]{40}$/
-const DEPLOYED_CONTRACT = '0x9eBE9664a68faA688FB95F058c30763a25846b79'
+const DEPLOYED_CONTRACT = '0x4Cb20B9dD428F2B14bf4d256a1342a4cC39a5cEE'
 
 function contractAddress(): string {
   const configured = String(process.env.GENLAYER_OBLIGATION_CONTRACT ?? '').trim()

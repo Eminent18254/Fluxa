@@ -5,6 +5,7 @@ import {
   formatMinorUnits,
   hasErrors,
   isOverdue,
+  reviewState,
   toMinorUnits,
   toUnixSeconds,
   validateDraft,
@@ -87,8 +88,7 @@ const validDraft = {
   amount: '100.00',
   dueDate: '2026-12-01',
   evidenceUri: 'https://example.com/manifest.json',
-  evidenceDigest: 'sha256:abc',
-  evidence: 'Invoice text',
+  evidenceDigest: `sha256:${'a'.repeat(64)}`,
 }
 
 describe('validateDraft', () => {
@@ -110,17 +110,18 @@ describe('validateDraft', () => {
     expect(validateDraft({ ...validDraft, amount: '0' }).amount).toBeTruthy()
   })
 
-  it('requires an HTTPS manifest and a sha256 digest', () => {
+  it('requires an HTTPS manifest and a full SHA-256 digest', () => {
     expect(validateDraft({ ...validDraft, evidenceUri: 'http://example.com' }).evidenceUri).toBeTruthy()
     expect(validateDraft({ ...validDraft, evidenceDigest: 'md5:abc' }).evidenceDigest).toBeTruthy()
+    expect(validateDraft({ ...validDraft, evidenceDigest: 'sha256:abc' }).evidenceDigest).toBeTruthy()
   })
 
-  it('requires evidence for the committee', () => {
-    expect(validateDraft({ ...validDraft, evidence: '   ' }).evidence).toBeTruthy()
+  it('accepts a digest that pins the whole hash, whatever its case', () => {
+    expect(validateDraft({ ...validDraft, evidenceDigest: `sha256:${'A1'.repeat(32)}` }).evidenceDigest).toBeUndefined()
   })
 
   it('reports every problem at once rather than one at a time', () => {
-    const errors = validateDraft({ ...validDraft, buyer: '', currency: '', amount: '0', evidence: '' })
+    const errors = validateDraft({ ...validDraft, buyer: '', currency: '', amount: '0', evidenceUri: '' })
     expect(Object.keys(errors).length).toBeGreaterThanOrEqual(4)
   })
 })
@@ -140,9 +141,12 @@ const base: Obligation = {
   confidenceBand: 'NONE',
   reason: '',
   inconsistencies: [],
-  policyVersion: 'fluxa-obligation-v1',
+  policyVersion: 'fluxa-obligation-v2',
   decisionRevision: 0,
   evidenceRevision: 1,
+  evaluatedRevision: 0,
+  contentDigest: '',
+  verdictIsCurrent: false,
   paymentReference: '',
 }
 
@@ -159,5 +163,46 @@ describe('due-date helpers', () => {
 
   it('never reports a paid obligation as overdue', () => {
     expect(isOverdue({ ...base, dueAt: inDays(-2), status: 'PAID' })).toBe(false)
+  })
+})
+
+/**
+ * The contract judges each evidence revision once and refuses to reconsider a
+ * verified obligation. These are the same rules the merchant panel renders from,
+ * so they are checked here rather than only being trusted in the component.
+ */
+describe('reviewState', () => {
+  it('allows the first judgement of a revision', () => {
+    expect(reviewState({ ...base, status: 'SUBMITTED', evidenceRevision: 1, evaluatedRevision: 0 })).toEqual({
+      judged: false,
+      canVerify: true,
+      canReplace: true,
+    })
+  })
+
+  it('refuses to judge the revision that has already been ruled on', () => {
+    const state = reviewState({ ...base, status: 'REJECTED', evidenceRevision: 1, evaluatedRevision: 1 })
+    expect(state.judged).toBe(true)
+    expect(state.canVerify).toBe(false)
+  })
+
+  it('allows a judgement again once a new revision has been committed', () => {
+    const state = reviewState({ ...base, status: 'SUBMITTED', evidenceRevision: 2, evaluatedRevision: 1 })
+    expect(state.judged).toBe(false)
+    expect(state.canVerify).toBe(true)
+  })
+
+  it('treats a verified or paid obligation as finished', () => {
+    for (const status of ['VERIFIED', 'PAID'] as const) {
+      const state = reviewState({ ...base, status, evidenceRevision: 1, evaluatedRevision: 1 })
+      expect(state.canVerify).toBe(false)
+      expect(state.canReplace).toBe(false)
+    }
+  })
+
+  it('stops replacing once the evidence revisions are used up', () => {
+    const state = reviewState({ ...base, status: 'REJECTED', evidenceRevision: 3, evaluatedRevision: 3 })
+    expect(state.canReplace).toBe(false)
+    expect(state.canVerify).toBe(false)
   })
 })

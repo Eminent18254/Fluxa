@@ -45,6 +45,8 @@ db.exec(`
     policy_version text not null,
     decision_revision integer not null default 0,
     evidence_revision integer not null default 0,
+    evaluated_revision integer not null default 0,
+    content_digest text not null default '',
     payment_reference text not null default '',
     synced_at text not null default (datetime('now'))
   );
@@ -65,10 +67,26 @@ db.exec(`
     policy_version text not null,
     decision_revision integer not null,
     evidence_revision integer not null,
+    content_digest text not null default '',
     observed_at text not null default (datetime('now')),
     unique (obligation_id, decision_revision)
   );
 `)
+
+/**
+ * The mirror is disposable and `npm run sync` rebuilds it, but a file written by
+ * an earlier version should still work rather than fail on its first write.
+ */
+function ensureColumn(table: string, column: string, definition: string): void {
+  const columns = db.prepare(`pragma table_info(${table})`).all() as { name: string }[]
+  if (!columns.some((entry) => entry.name === column)) {
+    db.exec(`alter table ${table} add column ${column} ${definition}`)
+  }
+}
+
+ensureColumn('obligations', 'evaluated_revision', 'integer not null default 0')
+ensureColumn('obligations', 'content_digest', "text not null default ''")
+ensureColumn('decisions', 'content_digest', "text not null default ''")
 
 /** The shape the contract's serializers return. */
 export type ContractObligation = {
@@ -89,6 +107,9 @@ export type ContractObligation = {
   policyVersion: string
   decisionRevision: number
   evidenceRevision: number
+  evaluatedRevision: number
+  contentDigest: string
+  verdictIsCurrent: boolean
   paymentReference: string
 }
 
@@ -97,8 +118,8 @@ const UPSERT = `
     id, external_id, merchant_address, buyer_address, currency, amount_minor,
     due_at, evidence_uri, evidence_digest, status, decision, confidence_band,
     reason, inconsistencies, policy_version, decision_revision, evidence_revision,
-    payment_reference, synced_at
-  ) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?, datetime('now'))
+    evaluated_revision, content_digest, payment_reference, synced_at
+  ) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?, datetime('now'))
   on conflict(id) do update set
     status = excluded.status,
     decision = excluded.decision,
@@ -109,6 +130,8 @@ const UPSERT = `
     evidence_digest = excluded.evidence_digest,
     decision_revision = excluded.decision_revision,
     evidence_revision = excluded.evidence_revision,
+    evaluated_revision = excluded.evaluated_revision,
+    content_digest = excluded.content_digest,
     payment_reference = excluded.payment_reference,
     buyer_address = excluded.buyer_address,
     synced_at = datetime('now')
@@ -134,6 +157,8 @@ export function upsertObligation(o: ContractObligation): void {
     o.policyVersion,
     Number(o.decisionRevision) || 0,
     Number(o.evidenceRevision) || 0,
+    Number(o.evaluatedRevision) || 0,
+    o.contentDigest ?? '',
     o.paymentReference ?? '',
   )
 
@@ -141,8 +166,8 @@ export function upsertObligation(o: ContractObligation): void {
     db.prepare(
       `insert or ignore into decisions (
          obligation_id, decision, confidence_band, reason, inconsistencies,
-         policy_version, decision_revision, evidence_revision
-       ) values (?,?,?,?,?,?,?,?)`,
+         policy_version, decision_revision, evidence_revision, content_digest
+       ) values (?,?,?,?,?,?,?,?,?)`,
     ).run(
       o.id,
       o.decision,
@@ -152,6 +177,7 @@ export function upsertObligation(o: ContractObligation): void {
       o.policyVersion,
       Number(o.decisionRevision) || 0,
       Number(o.evidenceRevision) || 0,
+      o.contentDigest ?? '',
     )
   }
 }

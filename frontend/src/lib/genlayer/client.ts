@@ -187,7 +187,10 @@ export async function switchToGenLayer(): Promise<void> {
 
 type Receipt = {
   execution_result?: string;
-  result?: string;
+  /** A revert reason arrives either as a decoded `{payload}` or as base64 text. */
+  result?: string | { payload?: string };
+  /** MAJORITY_AGREE or MAJORITY_DISAGREE; a disagreement writes nothing. */
+  result_name?: string;
   stderr?: string;
   error?: string;
   genvm_result?: { stderr?: string; stdout?: string };
@@ -203,12 +206,17 @@ function lastTracebackLine(text: string): string {
   return lines.length > 0 ? lines[lines.length - 1] : '';
 }
 
-/** Contract failures come back base64 inside receipt.result with an ERROR status. */
+/** Contract failures come back on the leader receipt with an ERROR status. */
 function decodeContractError(error: unknown): string {
   let node = error as { data?: { receipt?: Receipt }; receipt?: Receipt; cause?: unknown } | undefined;
   for (let depth = 0; node && depth < 6; depth += 1) {
     const receipt = node.data?.receipt ?? node.receipt;
     if (receipt && receipt.execution_result && receipt.execution_result !== 'SUCCESS') {
+      // Studionet hands the reason over as a decoded `{payload}` object, which is
+      // where every message the contract raises ends up.
+      const payload = (receipt.result as { payload?: unknown } | undefined)?.payload;
+      if (typeof payload === 'string' && payload.trim()) return payload.trim();
+
       const encoded = receipt.result;
       if (typeof encoded === 'string' && encoded.length > 0) {
         try {
@@ -246,6 +254,16 @@ export function readError(error: unknown): string {
   const text = decodeContractError(error) || String(raw);
 
   if (/undetermined|VALIDATORS_TIMEOUT|LEADER_TIMEOUT/i.test(text)) return 'The validator committee could not reach agreement. Nothing was changed - try again.';
+  if (/Evidence digest mismatch|digest mismatch/i.test(text)) {
+    return 'The evidence at that URL does not hash to the digest on record. Update the manifest, or re-commit the file with its current digest.';
+  }
+  if (/Evidence manifest answered HTTP|did not return a document|evidence document is empty/i.test(text)) {
+    return 'The evidence manifest could not be read. Check the URL is public and answers with the document itself.';
+  }
+  if (/already been judged/i.test(text)) return 'This evidence revision has already been judged. Commit a new evidence revision for another review.';
+  if (/verified obligation is final/i.test(text)) return 'This obligation is already verified. A verified decision is final.';
+  if (/already on record/i.test(text)) return 'That evidence is already on record, so there is nothing new to review.';
+  if (/can be replaced at most/i.test(text)) return 'This obligation has used all of its evidence revisions.';
   if (/Only the merchant/i.test(text)) return 'Only the merchant who created this obligation can do that.';
   if (/Only the recorded buyer/i.test(text)) return 'Only the buyer recorded on this obligation can record its payment.';
   if (/Only a verified obligation/i.test(text)) return 'This obligation has not been verified, so no payment can be recorded.';
@@ -326,6 +344,11 @@ async function send(functionName: string, args: unknown[]): Promise<WriteResult>
     // receipt itself to readError rather than a flattened string.
     throw new Error(readError({ data: { receipt: leader } }));
   }
+  // Validators that never agreed finalize with nothing written, which the leader
+  // receipt cannot show: the leader ran fine, the committee just did not back it.
+  if (receipt?.result_name === 'MAJORITY_DISAGREE') {
+    throw new Error('The validator committee did not reach agreement on this evidence, so nothing was written. Try again.');
+  }
   return { hash: hash as string, receipt: receipt as Receipt };
 }
 
@@ -390,12 +413,36 @@ export function createObligation(input: {
     input.amountMinor,
     input.dueAt,
     input.evidenceUri,
-    input.evidenceDigest,
+    input.evidenceDigest.trim().toLowerCase(),
   ]);
 }
 
-export function submitVerification(obligationId: string, evidence: string): Promise<WriteResult> {
-  return send('submit_verification', [obligationId, evidence]);
+/**
+ * Ask the committee to judge the evidence committed for this revision.
+ *
+ * No evidence text is sent. The contract fetches the manifest URI itself and
+ * refuses to judge anything that does not hash to the digest on record, so a
+ * paste could not influence the verdict even if one were sent along.
+ */
+export function submitVerification(obligationId: string): Promise<WriteResult> {
+  return send('submit_verification', [obligationId]);
+}
+
+/**
+ * Run the committee and confirm the verdict actually landed.
+ *
+ * A committee that fails to agree still finalizes, so the receipt alone cannot
+ * tell a written decision from a silent no-op. The decision counter can: if it
+ * has not moved, the obligation is exactly as it was before the call.
+ */
+export async function submitVerificationAndConfirm(obligationId: string): Promise<WriteResult> {
+  const before = await fetchObligation(obligationId);
+  const result = await submitVerification(obligationId);
+  const after = await fetchObligation(obligationId);
+  if (after.decisionRevision <= before.decisionRevision) {
+    throw new Error('The validator committee did not reach agreement on this evidence, so nothing was written. Try again.');
+  }
+  return result;
 }
 
 export function replaceEvidence(obligationId: string, evidenceUri: string, evidenceDigest: string): Promise<WriteResult> {
